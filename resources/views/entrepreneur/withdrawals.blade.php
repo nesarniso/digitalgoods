@@ -1,0 +1,12 @@
+@extends('layouts.entrepreneur')
+@section('title', 'Withdraw Profit')
+@section('header_title', 'Withdraw Profit')
+@section('content')
+<main class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-10">
+    <p class="text-xs font-bold uppercase tracking-widest text-[var(--brand-primary)]">Finance</p><h1 class="mt-2 text-3xl font-black">Withdraw Profit</h1><p class="mt-2 text-slate-600">Request a payout from your available entrepreneur balance.</p>
+    <div class="mt-8 grid gap-6 lg:grid-cols-[340px_1fr]">
+        <form method="POST" action="{{ route('entrepreneur.withdrawals.store') }}" class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">@csrf<h2 class="font-bold">New withdrawal request</h2><p class="mt-3 rounded-xl bg-emerald-50 p-4 text-emerald-800">Available: <strong>৳{{ number_format((float) $balance, 2) }}</strong></p><div class="mt-4 space-y-3"><input name="amount" type="number" min="1" step="0.01" required placeholder="Amount" class="w-full rounded-xl border-slate-200 text-sm"><select name="method" required class="w-full rounded-xl border-slate-200 text-sm"><option value="">Payment method</option><option value="bkash">bKash</option><option value="nagad">Nagad</option><option value="bank">Bank</option></select><input name="account_number" required placeholder="Account number" class="w-full rounded-xl border-slate-200 text-sm"><button class="w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white">Submit request</button></div></form>
+        <section class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200"><div class="border-b border-slate-100 px-5 py-4"><h2 class="font-bold">Withdrawal history</h2></div><table class="w-full text-left text-sm"><thead class="bg-slate-50 text-slate-500"><tr><th class="px-5 py-3">Date</th><th class="px-5 py-3">Amount</th><th class="px-5 py-3">Method</th><th class="px-5 py-3">Status</th></tr></thead><tbody class="divide-y divide-slate-100">@forelse($withdrawals as $withdrawal)<tr><td class="px-5 py-4 text-slate-500">{{ $withdrawal->requested_at?->format('d M Y') }}</td><td class="px-5 py-4 font-bold">৳{{ number_format((float) $withdrawal->amount, 2) }}</td><td class="px-5 py-4 uppercase">{{ $withdrawal->method }}</td><td class="px-5 py-4 capitalize">{{ $withdrawal->status }}</td></tr>@empty<tr><td colspan="4" class="px-5 py-8 text-center text-slate-500">No withdrawal requests yet.</td></tr>@endforelse</tbody></table><div class="p-5">{{ $withdrawals->links() }}</div></section>
+    </div>
+</main>
+@endsection

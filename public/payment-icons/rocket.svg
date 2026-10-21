@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Rocket">
+  <rect width="200" height="200" fill="#8d399b"/>
+  <path fill="#fff" d="M111 53 159 20l-18 59-18-14z"/>
+  <path fill="#fff" d="m123 66 18 13-50 30 20-31z"/>
+  <path fill="#fff" d="m91 108 8 19 19-31-14-10z"/>
+  <path fill="#fff" d="M21 101h37c13 0 22 8 22 19s-9 19-22 19H21V125h35c4 0 7-2 7-5s-3-5-7-5H21z"/>
+  <path fill="#fff" d="M86 101h18l13 14 13-14h18v38h-17v-19l-14 14-14-14v19H86z"/>
+  <path fill="#fff" d="M151 101h20c12 0 19 7 19 17s-7 17-19 17h-4v4h-16zm16 22c4 0 7-2 7-5s-3-5-7-5h-5v10z"/>
+  <circle cx="34" cy="147" r="8" fill="#fff"/>
+  <path fill="#fff" d="M47 145h12v6H47zM65 145h9v6h-9z"/>
+  <text x="84" y="151" fill="#fff" font-family="Arial,sans-serif" font-size="7" font-weight="700">ডাচ্-বাংলা ব্যাংক মোবাইল ব্যাংকিং</text>
+</svg>

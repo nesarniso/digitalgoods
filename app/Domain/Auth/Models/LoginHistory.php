@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Domain\Auth\Models;
+
+use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class LoginHistory extends Model
+{
+    public $timestamps = false;
+
+    protected $fillable = [
+        'user_id',
+        'ip_address',
+        'user_agent',
+        'login_method',
+        'successful',
+        'logged_in_at',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'successful' => 'boolean',
+            'logged_in_at' => 'datetime',
+        ];
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+}

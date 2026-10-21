@@ -1,0 +1,317 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../views/**/*.blade.php';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* Shared storefront surfaces keep the customer journey visually consistent. */
+.storefront-shell {
+    --surface-shadow: 0 18px 50px rgb(15 23 42 / 7%);
+    --surface-shadow-hover: 0 24px 65px rgb(15 23 42 / 13%);
+}
+
+.storefront-shell a,
+.storefront-shell button,
+.storefront-shell input,
+.storefront-shell select,
+.storefront-shell textarea {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.storefront-shell :is(a, button, input, select, textarea):focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--brand-primary) 32%, transparent);
+    outline-offset: 3px;
+}
+
+.storefront-shell [data-add-to-cart],
+.storefront-shell [data-buy-now],
+.storefront-shell [data-checkout-form] button[type="submit"] {
+    min-height: 2.9rem;
+    box-shadow: 0 10px 22px color-mix(in srgb, var(--brand-primary) 18%, transparent);
+    transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+}
+
+.storefront-shell [data-add-to-cart]:hover,
+.storefront-shell [data-buy-now]:hover,
+.storefront-shell [data-checkout-form] button[type="submit"]:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 28px color-mix(in srgb, var(--brand-primary) 26%, transparent);
+}
+
+.storefront-shell [data-checkout-form] input,
+.storefront-shell [data-checkout-form] select,
+.storefront-shell [data-checkout-form] textarea {
+    border-color: #e2e8f0;
+    background: #f8fafc;
+    transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.storefront-shell [data-checkout-form] :is(input, select, textarea):focus {
+    border-color: var(--brand-primary);
+    background: #fff;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand-primary) 13%, transparent);
+    outline: none;
+}
+
+.storefront-shell [data-payment-method]:has(input:checked) {
+    border-color: var(--brand-primary);
+    background: color-mix(in srgb, var(--brand-primary) 7%, white);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-primary) 12%, transparent);
+}
+
+.premium-product-card {
+    box-shadow: var(--surface-shadow);
+}
+
+.premium-product-card:hover {
+    box-shadow: var(--surface-shadow-hover);
+}
+
+.premium-product-card [data-product-image-wrap] img {
+    transition: transform 500ms cubic-bezier(.2,.7,.2,1);
+}
+
+.premium-product-card:hover [data-product-image-wrap] img {
+    transform: scale(1.055);
+}
+
+.premium-product-card [data-product-image-wrap] {
+    background: radial-gradient(circle at 50% 22%, #fff, color-mix(in srgb, var(--brand-primary) 10%, #f1f5f9));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .storefront-shell *,
+    .storefront-shell *::before,
+    .storefront-shell *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+.product-editor input:not([type="checkbox"]):not([type="file"]),
+.product-editor select,
+.product-editor textarea {
+    border-color: #e2e8f0;
+    background: #f8fafc;
+    border-radius: 0.85rem;
+    transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.product-editor input:not([type="checkbox"]):not([type="file"]):focus,
+.product-editor select:focus,
+.product-editor textarea:focus {
+    border-color: #818cf8;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgb(99 102 241 / 12%);
+    outline: none;
+}
+
+.product-editor label {
+    color: #334155;
+    line-height: 1.45;
+}
+
+.product-editor > form > div > h2,
+.product-editor > form > div > h3 {
+    letter-spacing: -0.01em;
+}
+
+body[style*="--brand-primary"] .bg-indigo-600 {
+    background-color: var(--brand-primary) !important;
+}
+
+body[style*="--brand-primary"] .hover\:bg-indigo-700:hover,
+body[style*="--brand-primary"] .hover\:bg-indigo-500:hover {
+    background-color: color-mix(in srgb, var(--brand-primary) 88%, #000) !important;
+}
+
+body[style*="--brand-primary"] .text-indigo-700,
+body[style*="--brand-primary"] .text-indigo-600 {
+    color: var(--brand-primary) !important;
+}
+
+body[style*="--brand-primary"] .bg-indigo-50 {
+    background-color: color-mix(in srgb, var(--brand-primary) 10%, white) !important;
+}
+
+body[style*="--brand-primary"] .ring-indigo-100,
+body[style*="--brand-primary"] .border-indigo-100 {
+    --tw-ring-color: color-mix(in srgb, var(--brand-primary) 20%, white) !important;
+    border-color: color-mix(in srgb, var(--brand-primary) 20%, white) !important;
+}
+
+.whatsapp-floating {
+    position: fixed !important;
+    inset: auto 1.5rem 1.5rem auto !important;
+    z-index: 70 !important;
+    display: flex !important;
+    width: 3.5rem !important;
+    height: 3.5rem !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 9999px !important;
+    background-color: #25d366 !important;
+    color: #fff !important;
+    box-shadow: 0 10px 25px rgb(37 211 102 / 35%), 0 0 0 4px #fff !important;
+}
+
+@media (max-width: 639px) {
+    .whatsapp-floating {
+        bottom: 6rem !important;
+        right: 1rem !important;
+    }
+}
+
+/*
+ * The storefront reference is composed at a 125% visual scale. Apply the
+ * same scale only on wide, normal-zoom desktop viewports; browser zoomed
+ * layouts already have the equivalent CSS viewport and remain unchanged.
+ */
+@media (min-width: 1200px) {
+    .storefront-shell {
+        zoom: 1.25;
+    }
+}
+
+.storefront-scrolled [data-storefront-header] {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 50;
+    box-shadow: 0 4px 18px rgb(15 23 42 / 10%);
+    animation: storefront-header-in 160ms ease-out;
+}
+
+.storefront-scrolled [data-header-topbar],
+.storefront-scrolled [data-header-nav] {
+    display: none;
+}
+
+.storefront-scrolled [data-header-main] {
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
+}
+
+.storefront-scrolled [data-header-main] > div {
+    gap: 1rem;
+}
+
+.storefront-scrolled [data-header-main] img {
+    height: 2rem;
+}
+
+.storefront-scrolled [data-header-wishlist] {
+    display: inline-flex;
+}
+
+.storefront-scrolled main {
+    padding-top: 4.5rem;
+}
+
+/* Keep footer columns horizontal on desktop even when the storefront is scaled. */
+.storefront-footer-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+/* Use the available desktop canvas at normal browser zoom. This keeps the
+ * storefront proportions consistent with the wider reference layout. */
+@media (min-width: 700px) {
+    .storefront-shell .max-w-6xl {
+        max-width: 90rem;
+    }
+
+    .storefront-shell .max-w-5xl {
+        max-width: 78rem;
+    }
+}
+
+.storefront-category-item:hover [data-category-panel],
+.storefront-category-item.is-open [data-category-panel] {
+    display: block;
+}
+
+@media (min-width: 1024px) {
+    [data-category-layout].category-panel-expanded {
+        grid-template-rows: auto;
+    }
+
+    [data-category-drawer].category-drawer-expanded {
+        height: auto;
+        overflow: visible;
+    }
+}
+
+.product-quick-view-overlay {
+    opacity: 0;
+}
+
+.product-quick-view-trigger:hover .product-quick-view-overlay {
+    opacity: 1;
+}
+
+.product-gallery-thumb.is-active {
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-primary) 14%, transparent);
+}
+
+.product-gallery-main-image {
+    transform: scale(1);
+    transition: transform 700ms ease;
+}
+
+.product-gallery-main:hover .product-gallery-main-image {
+    transform: scale(1.6);
+}
+
+/* Keep Bengali and other multi-script category labels balanced and readable. */
+.storefront-category-item,
+.storefront-category-flyout {
+    font-family: var(--font-sans);
+    letter-spacing: 0;
+    line-height: 1.55;
+}
+
+@media (max-width: 699px) {
+    .storefront-shell [data-checkout-form] {
+        border-radius: 1.25rem;
+        padding-bottom: 1.25rem;
+    }
+
+    .storefront-shell [data-checkout-form] > button[type="submit"] {
+        position: sticky;
+        bottom: 0.75rem;
+        z-index: 20;
+        margin-top: 1.5rem;
+        border: 4px solid #fff;
+        box-shadow: 0 10px 30px rgb(15 23 42 / 20%);
+    }
+
+    .storefront-shell [data-checkout-summary] {
+        border-radius: 1.25rem;
+    }
+
+    .storefront-category-flyout {
+        position: static;
+        min-width: 0;
+        margin-top: 0.5rem;
+        box-shadow: none;
+    }
+}
+
+@media (min-width: 700px) {
+    .storefront-footer-grid {
+        grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr);
+    }
+}
+
+@keyframes storefront-header-in {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(0); }
+}

@@ -1,0 +1,12 @@
+@extends('layouts.admin')
+@section('title', 'Reports')
+@section('content')
+<section class="mx-auto max-w-7xl px-6 py-10 lg:px-10">
+    <div class="flex flex-wrap items-end justify-between gap-4"><div><h1 class="text-3xl font-black">Reports & analytics</h1><p class="mt-2 text-slate-500">Sales performance for the selected period.</p></div><form method="GET" class="flex items-center gap-2"><label for="period" class="text-sm font-semibold text-slate-600">Period</label><select id="period" name="period" onchange="this.form.submit()" class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"><option value="7" @selected($period === 7)>Last 7 days</option><option value="30" @selected($period === 30)>Last 30 days</option><option value="90" @selected($period === 90)>Last 90 days</option><option value="365" @selected($period === 365)>Last 12 months</option></select></form></div>
+    <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">@foreach([['Orders', number_format($orders)], ['Revenue', '৳'.number_format((float) $revenue, 2)], ['Paid volume', '৳'.number_format((float) $paid, 2)], ['Customers', number_format($customers)]] as [$label, $value])<div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200"><p class="text-sm text-slate-500">{{ $label }}</p><p class="mt-3 text-2xl font-black">{{ $value }}</p></div>@endforeach</div>
+    <div class="mt-8 grid gap-8 lg:grid-cols-2">
+        <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200"><h2 class="border-b border-slate-200 px-6 py-4 font-bold">Orders by status</h2><div class="divide-y divide-slate-100">@forelse($topStatuses as $status)<div class="flex justify-between px-6 py-4"><span>{{ Str::headline($status->status) }}</span><strong>{{ $status->total }}</strong></div>@empty<p class="p-8 text-center text-slate-500">No order data for this period.</p>@endforelse</div></div>
+        <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200"><h2 class="border-b border-slate-200 px-6 py-4 font-bold">Top products</h2><div class="divide-y divide-slate-100">@forelse($topProducts as $product)<div class="flex items-center justify-between gap-4 px-6 py-4"><span class="font-semibold">{{ $product->product_name }}</span><span class="text-right text-sm text-slate-500">{{ number_format($product->units) }} sold<br><strong class="text-slate-900">৳{{ number_format((float) $product->revenue, 2) }}</strong></span></div>@empty<p class="p-8 text-center text-slate-500">No product sales for this period.</p>@endforelse</div></div>
+    </div>
+</section>
+@endsection

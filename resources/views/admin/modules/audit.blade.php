@@ -1,0 +1,5 @@
+@extends('layouts.admin')
+@section('title', 'Audit log')
+@section('content')
+<section class="mx-auto max-w-7xl px-6 py-10 lg:px-10"><h1 class="text-3xl font-black">Audit log</h1><p class="mt-2 text-slate-500">Track sensitive admin and operational actions.</p><div class="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200"><table class="w-full text-left text-sm"><thead class="bg-slate-50 text-slate-500"><tr><th class="px-6 py-3">Action</th><th class="px-6 py-3">Module</th><th class="px-6 py-3">Actor</th><th class="px-6 py-3">When</th></tr></thead><tbody class="divide-y divide-slate-100">@forelse($logs as $log)<tr><td class="px-6 py-4 font-semibold">{{ Str::headline($log->action) }}</td><td class="px-6 py-4">{{ Str::headline($log->module) }}</td><td class="px-6 py-4">{{ $log->user?->name ?: $log->role ?: 'System' }}</td><td class="px-6 py-4 text-slate-500">{{ $log->created_at?->format('d M Y, H:i') }}</td></tr>@empty<tr><td colspan="4" class="px-6 py-10 text-center text-slate-500">No audit events recorded yet.</td></tr>@endforelse</tbody></table></div><div class="mt-6">{{ $logs->links() }}</div></section>
+@endsection
