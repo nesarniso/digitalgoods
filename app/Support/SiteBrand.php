@@ -20,9 +20,9 @@ class SiteBrand
         return (string) config('app.name');
     }
 
-    public function text(string $text): string
+    public function text(?string $text): string
     {
-        return $this->replaceOutsideUrls($text, $this->name());
+        return $this->replaceOutsideUrls($text ?? '', $this->name());
     }
 
     public function html(string $html): string

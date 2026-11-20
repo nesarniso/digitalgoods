@@ -22,7 +22,6 @@ export default defineConfig({
         },
     },
     build: {
-        // Keep previously generated hashed assets available to history restores.
-        emptyOutDir: false,
+        emptyOutDir: true,
     },
 });

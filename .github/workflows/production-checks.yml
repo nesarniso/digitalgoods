@@ -1,0 +1,62 @@
+name: Production readiness
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      APP_ENV: testing
+      APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      APP_DEBUG: false
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ":memory:"
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: bcmath, curl, fileinfo, mbstring, pdo_mysql, pdo_sqlite, xml
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Validate Composer files
+        run: composer validate --no-check-publish
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Check dependency advisories
+        run: composer audit --no-interaction
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build production assets
+        run: npm run build
+
+      - name: Verify committed Vite assets
+        run: |
+          test -s public/build/manifest.json
+          git diff --exit-code -- public/build
+
+      - name: Validate Laravel caches
+        run: |
+          php artisan optimize:clear
+          php artisan route:cache
+          php artisan view:cache

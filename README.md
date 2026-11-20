@@ -7,8 +7,8 @@ only.
 
 ## Stack and local setup
 
-- Laravel 13.30.1
-- PHP 8.3.6
+- Laravel 13 (composer.lock currently resolves 13.43.0)
+- PHP 8.3+
 - SQLite for local development
 - Blade + Tailwind CSS v4 + Vite
 - Sanctum API authentication
@@ -26,6 +26,47 @@ npm install
 npm run build
 php artisan serve
 ```
+
+## Enhance Git deployment
+
+Connect Enhance to `nesarniso/digitalgoods` on branch `main` and use the
+project's `public/` directory as the Apache/PHP-FPM document root. Do not
+serve the production site with `php artisan serve` or the Vite development
+server. The production server does not need Node.js: build frontend assets
+locally with `npm ci && npm run build`, then commit `public/build` with the
+application. The deployment must include `public/build/manifest.json` and
+every file it references.
+
+Select PHP 8.4 with the required Laravel extensions and the host's supported
+PHP-FPM/Apache integration. Do not configure the domain as a Node application
+or proxy Apache to a `php artisan serve` process on port 3000; that is not a
+production web server and can cause 500/503 responses. Set `APP_ENV=production`,
+`APP_DEBUG=false`, and the HTTPS `APP_URL` in the protected production `.env`.
+Use the database host and credentials supplied by Enhance, and use file cache,
+file sessions, and a synchronous queue unless the corresponding services and
+workers are separately configured.
+
+Keep the production `.env` and `storage/` data outside source replacement.
+Configure Enhance's deploy commands to install Composer dependencies and
+refresh Laravel caches after the environment is available:
+
+```bash
+composer install --no-dev --optimize-autoloader
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+Do not run migrations as an automatic deploy step; back up the database and
+apply reviewed migrations separately. Ensure the PHP-FPM user can write to
+`storage/` (including `storage/logs/`) and `bootstrap/cache/`. Before creating
+a storage link, inspect any existing `public/storage` path and its target; do
+not delete or replace an existing directory or link without confirming its
+contents. Configure queue workers separately only when the production queue
+connection is not `sync`. The GitHub Actions workflow validates Composer
+dependencies, production asset reproducibility, and Laravel caches; Enhance
+remains responsible for the actual deployment.
 
 Fresh database seeds load the bundled default catalog from
 `database/seeders/data/default-catalog.json` and its referenced files from

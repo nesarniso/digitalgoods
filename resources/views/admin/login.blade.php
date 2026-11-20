@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Admin login | {{ config('app.name') }}</title>
-    @if(file_exists(public_path('build/manifest.json'))) @vite(['resources/css/app.css', 'resources/js/app.js']) @endif
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="flex min-h-screen items-center justify-center bg-slate-950 px-6 py-12 text-slate-900">
     <main class="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl">

@@ -16,7 +16,7 @@
     @hasSection('og_image')<meta property="og:image" content="@yield('og_image')">@endif
     @yield('structured_data')
     <title>@yield('title', config('app.name'))</title>
-    @if(file_exists(public_path('build/manifest.json'))) @vite(['resources/css/app.css', 'resources/js/app.js']) @endif
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body data-authenticated="{{ auth()->check() ? '1' : '0' }}" data-cart-drawer-enabled="{{ request()->routeIs('home', 'shop') ? '1' : '0' }}" class="storefront-shell min-h-screen overflow-x-hidden bg-[#f7f8fa] text-slate-900 antialiased" style="--brand-primary: {{ $systemSettings['brand_color'] ?? '#f97316' }};">
     <header data-storefront-header class="relative z-40 border-b border-slate-200 bg-white text-slate-900 shadow-sm">
