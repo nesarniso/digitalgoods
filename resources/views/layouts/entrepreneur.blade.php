@@ -35,7 +35,7 @@
                 <a href="{{ route('entrepreneur.support') }}" class="mt-1 flex rounded-xl px-3 py-2.5 {{ request()->routeIs('entrepreneur.support*') ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100' : 'text-slate-700 hover:bg-slate-100' }}">Training & Support</a>
             </nav>
             <div class="border-t border-slate-200 p-4">
-                <a href="{{ route('entrepreneur.profile') }}" class="flex rounded-xl px-3 py-2.5 text-sm {{ request()->routeIs('entrepreneur.profile*', 'entrepreneur.password.update') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-100' }}">Profile & Security</a>
+                <a href="{{ route('entrepreneur.profile') }}" class="flex rounded-xl px-3 py-2.5 text-sm {{ request()->routeIs('entrepreneur.profile*', 'account.entrepreneur.password.update') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-100' }}">Profile & Security</a>
                 <a href="{{ route('home') }}" class="flex rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100">← View Storefront</a>
                 <form method="POST" action="{{ route('entrepreneur.logout') }}" class="mt-1">@csrf<button class="w-full rounded-xl px-3 py-2.5 text-left text-sm text-slate-600 hover:bg-slate-100">Sign out</button></form>
             </div>

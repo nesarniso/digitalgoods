@@ -110,6 +110,11 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
     Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('logout');
 });
 
+Route::middleware(['auth', 'role:entrepreneur'])->prefix('entrepreneur')->group(function () {
+    Route::put('/profile/password', [EntrepreneurController::class, 'updatePassword'])
+        ->name('account.entrepreneur.password.update');
+});
+
 Route::middleware(['auth', 'role:entrepreneur'])->prefix('entrepreneur')->name('entrepreneur.')->group(function () {
     Route::get('/dashboard', [EntrepreneurController::class, 'dashboard'])->name('dashboard');
     Route::get('/customers', [EntrepreneurController::class, 'customers'])->name('customers');
@@ -128,7 +133,6 @@ Route::middleware(['auth', 'role:entrepreneur'])->prefix('entrepreneur')->name('
     Route::post('/notifications/{notification}', [NotificationController::class, 'entrepreneurRead'])->name('notifications.read');
     Route::get('/profile', [EntrepreneurController::class, 'profile'])->name('profile');
     Route::put('/profile', [EntrepreneurController::class, 'updateProfile'])->name('profile.update');
-    Route::put('/profile/password', [EntrepreneurController::class, 'updatePassword'])->name('password.update');
     Route::post('/withdrawals', [EntrepreneurController::class, 'requestWithdrawal'])->name('withdrawals.store');
     Route::get('/withdrawals', [EntrepreneurController::class, 'withdrawals'])->name('withdrawals');
     Route::get('/marketplace', [EntrepreneurMarketplaceController::class, 'index'])->name('marketplace');
