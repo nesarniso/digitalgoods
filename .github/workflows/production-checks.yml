@@ -47,12 +47,44 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Build production assets
-        run: npm run build
-
       - name: Verify committed Vite assets
         run: |
           test -s public/build/manifest.json
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const manifest = JSON.parse(fs.readFileSync('public/build/manifest.json', 'utf8'));
+          const references = new Set();
+          for (const entry of Object.values(manifest)) {
+            for (const asset of [entry.file, ...(entry.css ?? []), ...(entry.assets ?? [])]) {
+              if (asset) references.add(asset);
+            }
+          }
+          const missing = [...references].filter((asset) => !fs.existsSync(path.join('public/build', asset)));
+          if (missing.length) throw new Error(`Missing committed assets: ${missing.join(', ')}`);
+          console.log(`Verified ${references.size} committed Vite assets.`);
+          NODE
+
+      - name: Build production assets
+        run: npm run build
+
+      - name: Verify generated Vite assets
+        run: |
+          test -s public/build/manifest.json
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const manifest = JSON.parse(fs.readFileSync('public/build/manifest.json', 'utf8'));
+          const references = new Set();
+          for (const entry of Object.values(manifest)) {
+            for (const asset of [entry.file, ...(entry.css ?? []), ...(entry.assets ?? [])]) {
+              if (asset) references.add(asset);
+            }
+          }
+          const missing = [...references].filter((asset) => !fs.existsSync(path.join('public/build', asset)));
+          if (missing.length) throw new Error(`Missing generated assets: ${missing.join(', ')}`);
+          console.log(`Verified ${references.size} generated Vite assets.`);
+          NODE
           git diff --exit-code -- public/build
 
       - name: Validate Laravel caches

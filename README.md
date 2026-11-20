@@ -65,8 +65,8 @@ a storage link, inspect any existing `public/storage` path and its target; do
 not delete or replace an existing directory or link without confirming its
 contents. Configure queue workers separately only when the production queue
 connection is not `sync`. The GitHub Actions workflow validates Composer
-dependencies, production asset reproducibility, and Laravel caches; Enhance
-remains responsible for the actual deployment.
+dependencies, Vite asset reproducibility, and Laravel caches; Enhance remains
+responsible for the actual deployment.
 
 Fresh database seeds load the bundled default catalog from
 `database/seeders/data/default-catalog.json` and its referenced files from
