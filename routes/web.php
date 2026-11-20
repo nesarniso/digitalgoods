@@ -73,7 +73,7 @@ Route::middleware('guest')->prefix('account')->name('account.')->group(function 
     Route::get('/forgot-password', [CustomerAuthController::class, 'forgotPassword'])->name('password.request');
     Route::post('/forgot-password', [CustomerAuthController::class, 'sendPasswordResetCode'])->middleware('throttle:10,10')->name('password.email');
     Route::get('/reset-password', fn () => view('storefront.auth.reset-password'))->name('password.reset');
-    Route::post('/reset-password', [CustomerAuthController::class, 'resetPassword'])->middleware('throttle:20,10')->name('password.update');
+    Route::post('/reset-password', [CustomerAuthController::class, 'resetPassword'])->middleware('throttle:20,10')->name('reset-password.submit');
     Route::get('/register', [CustomerAuthController::class, 'register'])->name('register');
     Route::post('/register', [CustomerAuthController::class, 'store'])->name('register.store');
     Route::post('/checkout-session', [CustomerAuthController::class, 'createCheckoutSession'])->name('checkout-session');
