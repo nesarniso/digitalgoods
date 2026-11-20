@@ -54,11 +54,11 @@
                     </div>
                     <dl class="grid gap-5 px-6 py-5 text-sm sm:grid-cols-2">
                         <div><dt class="text-xs font-bold uppercase tracking-wider text-slate-500">Method</dt><dd class="mt-1 font-semibold">{{ Str::headline($paymentTransaction->gateway) }}</dd></div>
-                        <div><dt class="text-xs font-bold uppercase tracking-wider text-slate-500">Amount</dt><dd class="mt-1 font-semibold">৳{{ number_format((float) $paymentTransaction->amount, 2) }}</dd></div>
+                        <div><dt class="text-xs font-bold uppercase tracking-wider text-slate-500">Amount</dt><dd class="mt-1 font-semibold">₹{{ number_format((float) $paymentTransaction->amount, 2) }}</dd></div>
                         <div><dt class="text-xs font-bold uppercase tracking-wider text-slate-500">Payer mobile</dt><dd class="mt-1 font-semibold">{{ $paymentTransaction->payer_mobile ?: '—' }}</dd></div>
                         <div><dt class="text-xs font-bold uppercase tracking-wider text-slate-500">Transaction ID</dt><dd class="mt-1 break-all font-semibold">{{ $paymentTransaction->manual_transaction_id ?: '—' }}</dd></div>
                         @if($paymentTransaction->submitted_amount)
-                            <div><dt class="text-xs font-bold uppercase tracking-wider text-slate-500">Submitted amount</dt><dd class="mt-1 font-semibold">৳{{ number_format((float) $paymentTransaction->submitted_amount, 2) }}</dd></div>
+                            <div><dt class="text-xs font-bold uppercase tracking-wider text-slate-500">Submitted amount</dt><dd class="mt-1 font-semibold">₹{{ number_format((float) $paymentTransaction->submitted_amount, 2) }}</dd></div>
                         @endif
                     </dl>
                     @if(in_array($paymentTransaction->status, ['pending', 'initiated'], true))
@@ -78,7 +78,7 @@
             @endif
             <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
                 <h2 class="border-b border-slate-200 px-6 py-4 font-bold">Items</h2>
-                <div class="divide-y divide-slate-100">@foreach($order->items as $item)<div class="flex justify-between px-6 py-5"><div><p class="font-semibold">{{ $item->product_name }}</p>@if($item->variant_label)<p class="mt-1 text-sm font-medium text-indigo-600">{{ $item->variant_label }}</p>@elseif($item->variant)<p class="mt-1 text-sm font-medium text-indigo-600">{{ $item->variant->attributeValues->map(fn ($value) => "{$value->attribute->name}: {$value->value}")->implode(', ') }}</p>@endif<p class="text-sm text-slate-500">{{ $item->quantity }} × ৳{{ number_format((float) $item->unit_price, 2) }}</p></div><p class="font-bold">৳{{ number_format((float) $item->line_total, 2) }}</p></div>@endforeach</div>
+                <div class="divide-y divide-slate-100">@foreach($order->items as $item)<div class="flex justify-between px-6 py-5"><div><p class="font-semibold">{{ $item->product_name }}</p>@if($item->variant_label)<p class="mt-1 text-sm font-medium text-indigo-600">{{ $item->variant_label }}</p>@elseif($item->variant)<p class="mt-1 text-sm font-medium text-indigo-600">{{ $item->variant->attributeValues->map(fn ($value) => "{$value->attribute->name}: {$value->value}")->implode(', ') }}</p>@endif<p class="text-sm text-slate-500">{{ $item->quantity }} × ₹{{ number_format((float) $item->unit_price, 2) }}</p></div><p class="font-bold">₹{{ number_format((float) $item->line_total, 2) }}</p></div>@endforeach</div>
             </div>
 
             <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
@@ -145,7 +145,7 @@
         </div>
 
         @php($paymentStatus = $paymentTransaction?->isSuccessful() ? 'Paid' : (in_array($paymentTransaction?->status, ['pending', 'initiated'], true) ? 'Pending' : ($paymentTransaction ? Str::headline($paymentTransaction->status) : 'Pending')))
-        <aside class="h-fit rounded-2xl bg-slate-900 p-6 text-white"><p class="text-slate-300">Order total</p><p class="mt-2 text-3xl font-black">৳{{ number_format((float) $order->grand_total, 2) }}</p><dl class="mt-6 space-y-3 text-sm"><div class="flex justify-between"><dt class="text-slate-400">Payment</dt><dd>{{ Str::headline($order->payment_method) }}</dd></div><div class="flex justify-between"><dt class="text-slate-400">Payment status</dt><dd class="{{ $paymentStatus === 'Paid' ? 'text-emerald-300' : ($paymentStatus === 'Failed' ? 'text-red-300' : 'text-amber-300') }}">{{ $paymentStatus }}</dd></div><div class="flex justify-between"><dt class="text-slate-400">Shipping</dt><dd>{{ $order->shipping_method_name ?: '—' }}</dd></div><div class="flex justify-between"><dt class="text-slate-400">Status</dt><dd>{{ $order->status === 'confirmed' && $order->isPaid() ? 'Paid' : Str::headline($order->status) }}</dd></div></dl></aside>
+        <aside class="h-fit rounded-2xl bg-slate-900 p-6 text-white"><p class="text-slate-300">Order total</p><p class="mt-2 text-3xl font-black">₹{{ number_format((float) $order->grand_total, 2) }}</p><dl class="mt-6 space-y-3 text-sm"><div class="flex justify-between"><dt class="text-slate-400">Payment</dt><dd>{{ Str::headline($order->payment_method) }}</dd></div><div class="flex justify-between"><dt class="text-slate-400">Payment status</dt><dd class="{{ $paymentStatus === 'Paid' ? 'text-emerald-300' : ($paymentStatus === 'Failed' ? 'text-red-300' : 'text-amber-300') }}">{{ $paymentStatus }}</dd></div><div class="flex justify-between"><dt class="text-slate-400">Shipping</dt><dd>{{ $order->shipping_method_name ?: '—' }}</dd></div><div class="flex justify-between"><dt class="text-slate-400">Status</dt><dd>{{ $order->status === 'confirmed' && $order->isPaid() ? 'Paid' : Str::headline($order->status) }}</dd></div></dl></aside>
     </div>
 </section>
 @endsection

@@ -2,7 +2,7 @@
 
 return [
 
-    'name' => env('APP_NAME', 'Ecommerce Core'),
+    'name' => env('APP_NAME', 'DigitalGoods'),
 
     'env' => env('APP_ENV', 'production'),
 

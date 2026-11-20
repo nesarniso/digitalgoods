@@ -3,6 +3,7 @@
 namespace App\Domain\Commerce\Services;
 
 use App\Domain\Commerce\Models\Cart;
+use App\Domain\Digital\Models\DigitalLicenseKey;
 use App\Domain\Inventory\Models\Inventory;
 use App\Domain\Inventory\Models\Warehouse;
 use App\Domain\Shipping\Models\ShippingMethod;
@@ -55,7 +56,7 @@ class CheckoutService
             $issues[] = ['type' => 'empty_cart', 'message' => 'Your cart is empty.'];
         }
 
-        $items = $cart->items()->with(['product', 'variant.attributeValues.attribute'])->get();
+        $items = $cart->items()->with(['product.images', 'variant.attributeValues.attribute'])->get();
         foreach ($items as $item) {
             $item->assertPriceable();
         }
@@ -105,8 +106,11 @@ class CheckoutService
 
         return [
             'items' => $items->map(fn ($item) => [
+                'id' => $item->id,
                 'product_id' => $item->product_id,
                 'product_variant_id' => $item->product_variant_id,
+                'product_type' => $item->product->product_type,
+                'image_url' => $item->product->images->first()?->url,
                 'variant_label' => $item->variant?->attributeValues
                     ?->map(fn ($value) => "{$value->attribute->name}: {$value->value}")
                     ->implode(', '),
@@ -154,6 +158,24 @@ class CheckoutService
                 ];
 
                 continue;
+            }
+
+            if ($item->product->product_type === 'digital'
+                && ! $item->product->download_url
+                && ! $item->product->downloadFiles()->exists()) {
+                $availableKeys = DigitalLicenseKey::query()
+                    ->where('product_id', $item->product_id)
+                    ->where('product_variant_id', $item->product_variant_id)
+                    ->where('status', 'available')
+                    ->count();
+
+                if ($availableKeys < $item->quantity) {
+                    $issues[] = [
+                        'type' => 'digital_delivery_unavailable',
+                        'message' => "Digital delivery is not configured for \"{$item->product->name}\" yet.",
+                        'product_id' => $item->product_id,
+                    ];
+                }
             }
 
             if (! $defaultWarehouse) {

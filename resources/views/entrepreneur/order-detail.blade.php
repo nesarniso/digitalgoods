@@ -13,11 +13,11 @@
             <h2 class="font-bold">Products and profit</h2>
             <div class="mt-4 divide-y divide-slate-100">
                 @foreach($order->items as $item)
-                    <div class="grid gap-2 py-4 sm:grid-cols-4 sm:items-center"><div class="sm:col-span-2"><p class="font-semibold">{{ $item->product_name }}</p><p class="text-sm text-slate-500">Qty {{ $item->quantity }} · ৳{{ number_format((float) $item->unit_price, 2) }} each</p></div><div><p class="text-xs text-slate-500">Cost</p><p>৳{{ number_format((float) ($item->cost_price * $item->quantity), 2) }}</p></div><div><p class="text-xs text-slate-500">Profit ({{ $item->profit_status }})</p><p class="font-bold text-emerald-600">৳{{ number_format((float) $item->profit, 2) }}</p></div></div>
+                    <div class="grid gap-2 py-4 sm:grid-cols-4 sm:items-center"><div class="sm:col-span-2"><p class="font-semibold">{{ $item->product_name }}</p><p class="text-sm text-slate-500">Qty {{ $item->quantity }} · ₹{{ number_format((float) $item->unit_price, 2) }} each</p></div><div><p class="text-xs text-slate-500">Cost</p><p>₹{{ number_format((float) ($item->cost_price * $item->quantity), 2) }}</p></div><div><p class="text-xs text-slate-500">Profit ({{ $item->profit_status }})</p><p class="font-bold text-emerald-600">₹{{ number_format((float) $item->profit, 2) }}</p></div></div>
                 @endforeach
             </div>
         </section>
-        <aside class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200"><h2 class="font-bold">Customer</h2><p class="mt-3">{{ $order->user?->name }}</p><p class="text-sm text-slate-500">{{ $order->user?->phone ?: $order->user?->email }}</p><hr class="my-5"><div class="flex justify-between font-bold"><span>Order total</span><span>৳{{ number_format((float) $order->grand_total, 2) }}</span></div></aside>
+        <aside class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200"><h2 class="font-bold">Customer</h2><p class="mt-3">{{ $order->user?->name }}</p><p class="text-sm text-slate-500">{{ $order->user?->phone ?: $order->user?->email }}</p><hr class="my-5"><div class="flex justify-between font-bold"><span>Order total</span><span>₹{{ number_format((float) $order->grand_total, 2) }}</span></div></aside>
     </div>
 </main>
 @endsection

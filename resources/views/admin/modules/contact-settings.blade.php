@@ -28,7 +28,13 @@
                 <input name="support_hours" value="{{ old('support_hours', $contactSettings['support_hours']) }}" placeholder="Support hours" class="rounded-xl border border-slate-300 px-3 py-2">
                 <input name="response_time" value="{{ old('response_time', $contactSettings['response_time']) }}" placeholder="Response time" class="rounded-xl border border-slate-300 px-3 py-2">
             </div>
-            <p class="mt-3 text-sm text-slate-500">Phone, email, WhatsApp and address are managed from global System settings.</p>
+            <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                <div><label for="contact-email" class="mb-1 block text-sm font-medium text-slate-700">Support email</label><input id="contact-email" type="email" name="email" value="{{ old('email', $contactSettings['email']) }}" placeholder="support@example.com" class="w-full rounded-xl border border-slate-300 px-3 py-2"></div>
+                <div><label for="contact-phone" class="mb-1 block text-sm font-medium text-slate-700">Support phone</label><input id="contact-phone" type="text" name="phone" value="{{ old('phone', $contactSettings['phone']) }}" placeholder="+1 555 123 4567" class="w-full rounded-xl border border-slate-300 px-3 py-2"></div>
+                <div><label for="contact-whatsapp" class="mb-1 block text-sm font-medium text-slate-700">WhatsApp number</label><input id="contact-whatsapp" type="text" name="whatsapp" value="{{ old('whatsapp', $contactSettings['whatsapp']) }}" placeholder="Country code and number" class="w-full rounded-xl border border-slate-300 px-3 py-2"></div>
+                <div><label for="contact-address" class="mb-1 block text-sm font-medium text-slate-700">Business address</label><input id="contact-address" type="text" name="address" value="{{ old('address', $contactSettings['address']) }}" placeholder="Business address" class="w-full rounded-xl border border-slate-300 px-3 py-2"></div>
+            </div>
+            <p class="mt-3 text-sm text-slate-500">Saved support details are also used by the storefront footer and customer support links.</p>
         </div>
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
             <div class="flex items-center justify-between gap-4">

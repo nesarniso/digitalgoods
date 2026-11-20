@@ -10,7 +10,9 @@ use App\Domain\Catalog\Models\ProductReview;
 use App\Domain\Entrepreneurs\Models\EntrepreneurProfile;
 use App\Domain\Orders\Models\Order;
 use App\Domain\Orders\Models\OrderItem;
+use App\Domain\Settings\Services\FeatureFlagService;
 use App\Domain\Settings\Services\SettingService;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -20,10 +22,33 @@ class StorefrontController extends Controller
     public function __construct(
         private readonly SettingService $settings,
         private readonly AnalyticsService $analytics,
+        private readonly FeatureFlagService $featureFlags,
     ) {}
 
     public function home()
     {
+        $limitedOfferEnabled = (bool) filter_var($this->settings->get('homepage.limited_offer_enabled', false), FILTER_VALIDATE_BOOLEAN);
+        $limitedOfferEndsAt = filled($this->settings->get('homepage.limited_offer_ends_at'))
+            ? Carbon::parse($this->settings->get('homepage.limited_offer_ends_at'))
+            : null;
+        $limitedOfferProductIds = json_decode((string) $this->settings->get('homepage.limited_offer_product_ids', '[]'), true);
+        if (! is_array($limitedOfferProductIds)) {
+            Log::warning('Invalid limited-offer product setting.', ['value' => $this->settings->get('homepage.limited_offer_product_ids')]);
+            $limitedOfferProductIds = [];
+        }
+        $limitedOfferProductIds = array_values(array_filter(array_map('intval', $limitedOfferProductIds)));
+        $limitedOfferProducts = collect();
+        if ($limitedOfferEnabled && $limitedOfferEndsAt?->isFuture() && $limitedOfferProductIds !== []) {
+            $products = $this->publishedProducts(false)
+                ->whereIn('id', $limitedOfferProductIds)
+                ->get()
+                ->keyBy('id');
+            $limitedOfferProducts = collect($limitedOfferProductIds)
+                ->map(fn (int $id) => $products->get($id))
+                ->filter()
+                ->values();
+        }
+
         $homepage = [
             'slogan' => $this->settings->get('system.slogan', 'আপনার উদ্যোগ, আমাদের প্ল্যাটফর্ম'),
             'hero_enabled' => (bool) filter_var($this->settings->get('homepage.hero_enabled', true), FILTER_VALIDATE_BOOLEAN),
@@ -46,7 +71,7 @@ class StorefrontController extends Controller
             'category_section_enabled' => (bool) filter_var($this->settings->get('homepage.category_section_enabled', true), FILTER_VALIDATE_BOOLEAN),
             'category_limit' => max(4, (int) $this->settings->get('homepage.category_limit', 8)),
             'featured_section_enabled' => (bool) filter_var($this->settings->get('homepage.featured_section_enabled', true), FILTER_VALIDATE_BOOLEAN),
-            'featured_limit' => max(4, (int) $this->settings->get('homepage.featured_limit', 8)),
+            'featured_limit' => max(10, (int) $this->settings->get('homepage.featured_limit', 10)),
         ];
 
         $recommendedProduct = $this->publishedProducts()
@@ -60,6 +85,8 @@ class StorefrontController extends Controller
         return response()
             ->view('storefront.home', [
             'homeSettings' => $homepage,
+            'limitedOfferEndsAt' => $limitedOfferEndsAt,
+            'limitedOfferProducts' => $limitedOfferProducts,
             'homeStats' => [
                 'products' => $this->publishedProducts()->count(),
                 'entrepreneurs' => EntrepreneurProfile::query()->where('status', 'active')->count(),
@@ -102,6 +129,10 @@ class StorefrontController extends Controller
                 ->latest('published_at')
                 ->limit($homepage['featured_limit'])
                 ->get(),
+            'premiumBundlePlans' => $this->publishedProducts(false)
+                ->whereIn('slug', ['all-bundles', 'all-bundles-reseller-rights'])
+                ->get()
+                ->keyBy('slug'),
             'recommendedProduct' => $recommendedProduct,
             'mostSellingProducts' => $this->mostSellingProducts(),
             ])
@@ -156,10 +187,15 @@ class StorefrontController extends Controller
                 $query->where('name', 'like', '%'.$request->string('q')->toString().'%')
                     ->orWhere('sku', 'like', '%'.$request->string('q')->toString().'%');
             }))
-            ->when($selectedCategory !== '', fn ($query) => $query->whereHas('category', fn ($category) => $category
-                ->where('slug', $selectedCategory)
-                ->orWhereHas('parent', fn ($parent) => $parent->where('slug', $selectedCategory))
-                ->orWhereHas('parent.parent', fn ($parent) => $parent->where('slug', $selectedCategory))))
+            ->when($selectedCategory !== '', fn ($query) => $query->where(function ($query) use ($selectedCategory) {
+                $categoryFilter = fn ($category) => $category
+                    ->where('slug', $selectedCategory)
+                    ->orWhereHas('parent', fn ($parent) => $parent->where('slug', $selectedCategory))
+                    ->orWhereHas('parent.parent', fn ($parent) => $parent->where('slug', $selectedCategory));
+
+                $query->whereHas('category', $categoryFilter)
+                    ->orWhereHas('categories', $categoryFilter);
+            }))
             ->when($request->string('sort')->toString() === 'price_low', fn ($query) => $query->orderBy('sale_price')->orderBy('regular_price'))
             ->when($request->string('sort')->toString() === 'price_high', fn ($query) => $query->orderByDesc('sale_price')->orderByDesc('regular_price'))
             ->when(! in_array($request->string('sort')->toString(), ['price_low', 'price_high'], true), fn ($query) => $query->latest('published_at'))
@@ -186,6 +222,29 @@ class StorefrontController extends Controller
             ->cookie(AnalyticsService::COOKIE, $visitorId, 60 * 24 * 365, '/', null, $request->isSecure(), true, false, 'lax');
     }
 
+    public function reels(Request $request)
+    {
+        $categoryFilter = fn ($category) => $category
+            ->where('slug', 'reels-bundle')
+            ->orWhereHas('parent', fn ($parent) => $parent->where('slug', 'reels-bundle'))
+            ->orWhereHas('parent.parent', fn ($parent) => $parent->where('slug', 'reels-bundle'));
+
+        $products = $this->publishedProducts(withReviews: false)
+            ->whereHas('videos')
+            ->where(fn ($query) => $query
+                ->whereHas('category', $categoryFilter)
+                ->orWhereHas('categories', $categoryFilter))
+            ->with(['images', 'videos'])
+            ->latest('published_at')
+            ->get();
+
+        $visitorId = $this->analytics->track($request, 'page_view');
+
+        return response()
+            ->view('storefront.reels', ['products' => $products])
+            ->cookie(AnalyticsService::COOKIE, $visitorId, 60 * 24 * 365, '/', null, $request->isSecure(), true, false, 'lax');
+    }
+
     public function product(Request $request, string $slug)
     {
         $ratingFilter = $request->integer('rating');
@@ -201,6 +260,7 @@ class StorefrontController extends Controller
                 'category',
                 'brand',
                 'images',
+                'videos',
                 'variants' => fn ($query) => $query->orderBy('id')->with('attributeValues.attribute'),
             ])
             ->firstOrFail();
@@ -280,6 +340,7 @@ class StorefrontController extends Controller
                 : collect(),
             'entrepreneurCanSell' => $entrepreneurCanSell,
             'entrepreneurHasProduct' => $entrepreneurHasProduct,
+            'compareEnabled' => $this->featureFlags->isEnabled('compare'),
             'shareUrl' => $shareUrl,
             ])
             ->cookie(AnalyticsService::COOKIE, $visitorId, 60 * 24 * 365, '/', null, $request->isSecure(), true, false, 'lax');

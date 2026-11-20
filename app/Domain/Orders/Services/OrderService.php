@@ -178,7 +178,7 @@ class OrderService
                 (string) $order->grand_total,
                 $idempotencyKey.'-payment',
                 $user,
-                'BDT',
+                'INR',
                 $order,
                 ['payer_mobile' => $payerMobile, 'manual_transaction_id' => $transactionId, 'paid_at' => $paidAt, 'submitted_amount' => $submittedAmount],
             );
@@ -191,10 +191,10 @@ class OrderService
                     route('account.orders.show', $order),
                     'order_placed',
                     [
-                        'site_name' => config('app.name'),
+                        'site_name' => app(\App\Support\SiteBrand::class)->name(),
                         'customer_name' => $order->user->name,
                         'order_number' => $order->order_number,
-                        'grand_total' => '৳'.number_format((float) $order->grand_total, 2),
+                        'grand_total' => '₹'.number_format((float) $order->grand_total, 2),
                     ],
                 ));
                 $this->pushNotifications->queueForUser($order->user, 'Order received', "We received order {$order->order_number}.", route('account.orders.show', $order));
@@ -294,7 +294,7 @@ class OrderService
                     route('account.orders.show', $order),
                     'payment_confirmed',
                     [
-                        'site_name' => config('app.name'),
+                        'site_name' => app(\App\Support\SiteBrand::class)->name(),
                         'customer_name' => $customer->name,
                         'order_number' => $order->order_number,
                     ],

@@ -46,7 +46,7 @@ class OrderController extends Controller
         $cart = $result['cart'];
 
         $digitalOnly = $this->cartService->isDigitalOnly($cart);
-        $address = $this->resolveAddress($request, $user);
+        $address = $digitalOnly ? null : $this->resolveAddress($request, $user);
         $shippingMethod = $digitalOnly ? null : ($request->filled('shipping_method_id')
             ? ShippingMethod::findOrFail($request->integer('shipping_method_id'))
             : ShippingMethod::query()->where('is_active', true)->orderBy('sort_order')->firstOrFail());
@@ -59,7 +59,7 @@ class OrderController extends Controller
             $request->string('idempotency_key'),
             $user,
             null,
-            null,
+            $digitalOnly ? $request->string('phone')->toString() : null,
             $request->input('notes'),
             $this->attribution->forOrder($request, $request->input('attribution_code')),
             $request->input('payer_mobile'),

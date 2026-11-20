@@ -54,7 +54,7 @@ class ProductReviewController extends Controller
             'Your review is awaiting moderation.',
             route('products.show', $product->slug),
             'review_submitted',
-            ['customer_name' => $request->user()->name, 'site_name' => config('app.name')],
+            ['customer_name' => $request->user()->name, 'site_name' => app(\App\Support\SiteBrand::class)->name()],
         ));
 
         return back()->with('success', 'Review submitted for moderation.');

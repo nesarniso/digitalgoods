@@ -19,7 +19,7 @@
             @forelse($withdrawals as $withdrawal)
                 <tr>
                     <td class="px-5 py-4">{{ $withdrawal->entrepreneur?->name }}<div class="text-xs text-slate-500">{{ $withdrawal->account_number }}</div></td>
-                    <td class="px-5 py-4 font-semibold">৳{{ number_format((float) $withdrawal->amount, 2) }}</td>
+                    <td class="px-5 py-4 font-semibold">₹{{ number_format((float) $withdrawal->amount, 2) }}</td>
                     <td class="px-5 py-4 uppercase">{{ $withdrawal->method }}</td>
                     <td class="px-5 py-4 capitalize">{{ $withdrawal->status }}</td>
                     <td class="px-5 py-4">

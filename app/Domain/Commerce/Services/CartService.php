@@ -229,6 +229,22 @@ class CartService
         );
     }
 
+    public function isDigitalOnlyFor(?User $user, ?string $guestToken): bool
+    {
+        if ($user) {
+            $cart = Cart::query()->where('user_id', $user->id)->first();
+        } elseif ($guestToken) {
+            $cart = Cart::query()
+                ->where('guest_token', $guestToken)
+                ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+                ->first();
+        } else {
+            return false;
+        }
+
+        return $cart !== null && $this->isDigitalOnly($cart);
+    }
+
     private function assertPurchasable(Product $product, ?ProductVariant $variant, int $quantity): void
     {
         if ($product->status !== 'published') {

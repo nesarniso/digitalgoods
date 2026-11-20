@@ -32,7 +32,7 @@ class CheckoutController extends Controller
         $cart = $result['cart'];
 
         $digitalOnly = $this->cartService->isDigitalOnly($cart);
-        $address = $this->resolveAddress($request, $user);
+        $address = $digitalOnly ? null : $this->resolveAddress($request, $user);
         $shippingMethod = $digitalOnly ? null : ($request->filled('shipping_method_id')
             ? ShippingMethod::findOrFail($request->integer('shipping_method_id'))
             : ShippingMethod::query()->where('is_active', true)->orderBy('sort_order')->firstOrFail());

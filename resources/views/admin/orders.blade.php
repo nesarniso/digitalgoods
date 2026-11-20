@@ -68,7 +68,7 @@
                             <td class="px-4 py-4"><span class="rounded-full px-2.5 py-1 text-xs font-bold {{ $order->status === 'delivered' ? 'bg-emerald-100 text-emerald-700' : ($order->status === 'processing' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700') }}">{{ $order->status === 'confirmed' && $order->isPaid() ? 'Paid' : Str::headline($order->status) }}</span></td>
                             <td class="px-4 py-4 font-medium">{{ Str::headline($order->payment_method ?: '—') }}</td>
                             <td class="px-4 py-4 font-mono text-xs text-slate-600">{{ $transaction?->manual_transaction_id ?: $transaction?->gateway_reference ?: '—' }}</td>
-                            <td class="px-4 py-4 text-right font-semibold">৳{{ number_format((float) $order->grand_total, 2) }}</td>
+                            <td class="px-4 py-4 text-right font-semibold">₹{{ number_format((float) $order->grand_total, 2) }}</td>
                             <td class="px-4 py-4 whitespace-nowrap text-slate-500">{{ $order->placed_at?->format('d M Y, H:i') }}</td>
                         </tr>
                     @empty

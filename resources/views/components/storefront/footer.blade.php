@@ -9,7 +9,12 @@
                 foreach ($footerPages as $page) {
                     $allCustomerCareLinks[] = [
                         'label' => $page->title,
-                        'url' => route('pages.show', $page),
+                        'url' => match ($page->slug) {
+                            'about-us' => route('about-us'),
+                            'contact-us' => route('contact-us'),
+                            'returns-refunds' => route('refund-returns'),
+                            default => route('pages.show', $page),
+                        },
                     ];
                 }
                 foreach ($allCustomerCareLinks as $link) {
@@ -30,7 +35,7 @@
                             <span class="text-xl font-black text-white">{{ $systemSettings['site_name'] ?? config('app.name') }}</span>
                         @endif
                     </a>
-                    <p class="mt-4 max-w-xs text-sm leading-6 text-slate-300">{{ $footerSettings['description'] }}</p>
+                    <p class="mt-4 max-w-xs text-sm leading-6 text-slate-300">{{ app(\App\Support\SiteBrand::class)->text($footerSettings['description']) }}</p>
                     <div class="mt-4 space-y-2 text-sm font-medium text-slate-200">
                         @if (!empty($systemSettings['phone']))
                             <a href="tel:{{ $systemSettings['phone'] }}" class="flex items-center gap-2 transition hover:text-orange-300">
@@ -80,7 +85,7 @@
                 </div>
             </div>
             <div class="mt-10 flex flex-wrap justify-between gap-3 border-t border-slate-800 pt-5 text-xs text-slate-500">
-                <span>{{ $footerSettings['copyright'] }}</span>
+                <span>{{ app(\App\Support\SiteBrand::class)->text($footerSettings['copyright']) }}</span>
             </div>
         </div>
     </footer>

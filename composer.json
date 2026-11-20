@@ -1,7 +1,7 @@
 {
-    "name": "yourcompany/ecommerce-core",
+    "name": "nesarniso/digitalgoods",
     "type": "project",
-    "description": "Laravel Universal E-Commerce Core \u2014 reusable, modular, multi-client engine.",
+    "description": "DigitalGoods \u2014 Laravel ecommerce platform for digital and physical products.",
     "keywords": [
         "laravel",
         "ecommerce",

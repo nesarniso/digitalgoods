@@ -262,10 +262,10 @@
                 <label class="block text-sm font-medium text-slate-700">Return cost per item
                     <div class="mt-1 flex items-center gap-2">
                         <input type="number" name="return_cost" min="0" step="0.01" required value="{{ old('return_cost', $entrepreneurReturnCost) }}" class="w-full rounded-xl border border-slate-300 px-3 py-2">
-                        <span class="font-bold text-slate-500">৳</span>
+                        <span class="font-bold text-slate-500">₹</span>
                     </div>
                 </label>
-                <p class="text-xs text-slate-500">Example: purchase cost ৳100 and 20% means ৳20 profit. Profit cannot exceed the available selling margin.</p>
+                <p class="text-xs text-slate-500">Example: purchase cost ₹100 and 20% means ₹20 profit. Profit cannot exceed the available selling margin.</p>
                 <button type="submit" class="w-full rounded-xl bg-emerald-600 px-4 py-3 font-bold text-white hover:bg-emerald-500">Save profit rate</button>
             </form>
         </div>

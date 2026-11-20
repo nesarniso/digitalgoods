@@ -65,6 +65,10 @@ class AppServiceProvider extends ServiceProvider
             $settings = null;
         }
         if ($settings) {
+            $siteName = trim((string) $settings->get('system.site_name', config('app.name')));
+            if ($siteName !== '') {
+                Config::set('app.name', $siteName);
+            }
             Config::set('mail.default', $settings->get('mail.mailer', config('mail.default')));
             Config::set('mail.mailers.smtp.host', $settings->get('mail.host', config('mail.mailers.smtp.host')));
             Config::set('mail.mailers.smtp.port', (int) $settings->get('mail.port', config('mail.mailers.smtp.port')));
@@ -109,6 +113,12 @@ class AppServiceProvider extends ServiceProvider
                 'column_two_links' => self::footerLinks($settings, 'two'),
             ]);
             $view->with('footerPages', Page::query()->where('is_published', true)->where('show_in_footer', true)->orderBy('title')->get());
+            if ($view->getName() === 'layouts.admin') {
+                $view->with('adminContentPages', Page::query()
+                    ->whereIn('slug', ['about-us', 'returns-refunds'])
+                    ->get()
+                    ->keyBy('slug'));
+            }
             if ($view->getName() === 'layouts.storefront') {
                 $view->with('categories', Category::query()
                     ->where('is_active', true)

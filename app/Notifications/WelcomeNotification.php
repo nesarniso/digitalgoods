@@ -19,17 +19,18 @@ class WelcomeNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
+        $siteName = app(\App\Support\SiteBrand::class)->name();
         $rendered = app(EmailTemplateService::class)->render('welcome', [
-            'site_name' => config('app.name'),
+            'site_name' => $siteName,
             'customer_name' => $notifiable->name,
             'login_url' => url('/account/login'),
         ]);
 
         return (new MailMessage)
-            ->subject($rendered['subject'] ?? 'Welcome to '.config('app.name'))
+            ->subject($rendered['subject'] ?? 'Welcome to '.$siteName)
             ->view('emails.template', [
                 'body' => $rendered['body'] ?? view('emails.welcome', [
-                    'siteName' => config('app.name'),
+                    'siteName' => $siteName,
                     'name' => $notifiable->name,
                     'loginUrl' => url('/account/login'),
                 ])->render(),

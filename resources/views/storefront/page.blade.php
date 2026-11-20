@@ -1,39 +1,36 @@
 @extends('layouts.storefront')
-@section('title', ($page->meta_title ?: $page->title).' | '.config('app.name'))
-@section('meta_description', $page->meta_description ?: Str::limit(strip_tags($page->content), 155))
+@section('title', app(\App\Support\SiteBrand::class)->text($page->meta_title ?: $page->title).' | '.config('app.name'))
+@section('meta_description', app(\App\Support\SiteBrand::class)->text($page->meta_description ?: Str::limit(strip_tags($page->content), 155)))
 @section('content')
 @if($page->slug === 'about-us')
-<section class="mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16">
-    <div class="relative overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-12 text-white shadow-2xl shadow-indigo-200/40 sm:px-12 sm:py-16">
-        <div class="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-indigo-500/30 blur-3xl"></div>
-        <div class="absolute -bottom-32 left-1/3 h-72 w-72 rounded-full bg-violet-500/20 blur-3xl"></div>
-        <div class="relative max-w-3xl">
-            <span class="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-indigo-200">About {{ $systemSettings['site_name'] ?? config('app.name') }}</span>
-            <h1 class="mt-6 text-4xl font-black tracking-tight sm:text-6xl">Digital products, delivered with confidence.</h1>
-            <p class="mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">A trusted destination for useful digital products, clear service and a shopping experience designed around you.</p>
-            <a href="{{ route('shop') }}" class="mt-8 inline-flex rounded-xl bg-white px-6 py-3 font-bold text-slate-950 transition hover:-translate-y-0.5 hover:bg-indigo-50">Explore our products <span class="ml-2">→</span></a>
-        </div>
+<section class="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+    <div class="overflow-hidden rounded-[2rem] border border-orange-100 bg-gradient-to-br from-orange-50 via-white to-rose-50 px-6 py-10 sm:px-12 sm:py-14">
+        <p class="text-xs font-black uppercase tracking-[0.22em] text-orange-600">Your digital gateway to success</p>
+        <h1 class="mt-4 text-4xl font-black tracking-tight text-slate-950 sm:text-6xl">About our Digital store</h1>
+        <p class="mt-5 max-w-2xl text-lg leading-8 text-slate-600">Useful, creative and ready-to-use digital resources for your next idea.</p>
+        <a href="{{ route('shop') }}" class="mt-7 inline-flex items-center gap-2 rounded-xl bg-[#f58220] px-6 py-3 font-bold text-white shadow-sm transition hover:bg-orange-600">Explore Products <span aria-hidden="true">→</span></a>
     </div>
-    <div class="mt-8 grid gap-4 sm:grid-cols-3">
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><span class="text-2xl text-[var(--brand-primary)]">✦</span><p class="mt-4 text-lg font-black">Curated quality</p><p class="mt-2 text-sm leading-6 text-slate-500">Products selected to bring real value to everyday life.</p></div>
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><span class="text-2xl text-[var(--brand-primary)]">⌁</span><p class="mt-4 text-lg font-black">Simple experience</p><p class="mt-2 text-sm leading-6 text-slate-500">Clear pricing, smooth checkout and helpful support.</p></div>
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><span class="text-2xl text-[var(--brand-primary)]">♡</span><p class="mt-4 text-lg font-black">Customer first</p><p class="mt-2 text-sm leading-6 text-slate-500">We are here to make every order feel dependable.</p></div>
+    <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        @foreach([
+            ['01', 'Ready to Use', 'Practical digital resources, ready to download and use.'],
+            ['02', 'Curated Collections', 'Useful bundles and collections gathered in one place.'],
+            ['03', 'Creative Resources', 'Digital assets for creators, marketers and businesses.'],
+            ['04', 'Instant Access', 'Get convenient access to your digital products after purchase.'],
+        ] as [$number, $title, $description])
+            <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <span class="text-xs font-black tracking-widest text-[#f58220]">{{ $number }}</span>
+                <h2 class="mt-3 text-lg font-black text-slate-900">{{ $title }}</h2>
+                <p class="mt-2 text-sm leading-6 text-slate-500">{{ $description }}</p>
+            </article>
+        @endforeach
     </div>
-    <div class="mt-8 grid items-start gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-        <article class="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm sm:p-10">
-            <p class="text-sm font-bold uppercase tracking-widest text-[var(--brand-primary)]">Our story</p>
-            <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">Built for better digital shopping</h2>
-            <div class="prose prose-slate mt-6 max-w-none break-words leading-7">{!! $page->content !!}</div>
-        </article>
-        <aside class="rounded-3xl bg-indigo-50 p-6 sm:p-8">
-            <p class="text-sm font-bold uppercase tracking-widest text-indigo-700">Our promise</p>
-            <h2 class="mt-3 text-2xl font-black text-slate-900">Reliable from discovery to delivery.</h2>
-            <ul class="mt-6 space-y-4 text-sm leading-6 text-slate-600">
-                <li class="flex gap-3"><span class="font-black text-indigo-600">01</span><span>Transparent product information and pricing.</span></li>
-                <li class="flex gap-3"><span class="font-black text-indigo-600">02</span><span>Secure ordering with responsive customer care.</span></li>
-                <li class="flex gap-3"><span class="font-black text-indigo-600">03</span><span>Support that stays with you after purchase.</span></li>
-            </ul>
-        </aside>
+    <article class="mt-6 rounded-3xl border border-slate-200 bg-white px-6 py-8 shadow-sm sm:px-10 sm:py-10">
+        <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-600">About {{ config('app.name') }}</p>
+        <div class="prose prose-slate mt-5 max-w-none break-words leading-8 prose-headings:font-black prose-headings:tracking-tight prose-headings:text-slate-950 prose-h2:mt-10 prose-h2:border-t prose-h2:border-orange-100 prose-h2:pt-7 prose-a:text-orange-700 prose-li:marker:text-orange-500">{!! app(\App\Support\SiteBrand::class)->html($page->content) !!}</div>
+    </article>
+    <div class="mt-6 rounded-3xl bg-gradient-to-r from-[#fb5360] to-[#f58220] px-6 py-8 text-white sm:flex sm:items-center sm:justify-between sm:px-10">
+        <div><p class="text-xs font-black uppercase tracking-[0.2em] text-white/80">Ready to explore?</p><h2 class="mt-2 text-2xl font-black sm:text-3xl">Find Your Next Digital Resource.</h2></div>
+        <a href="{{ route('shop') }}" class="mt-5 inline-flex rounded-xl bg-white px-5 py-3 text-sm font-bold text-slate-900 hover:bg-orange-50 sm:mt-0">Explore Products <span class="ml-2">→</span></a>
     </div>
 </section>
 @elseif($page->slug === 'contact-us')
@@ -47,38 +44,67 @@
             <ul class="mt-2 list-disc space-y-1 pl-5">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
         </div>
     @endif
-    <div class="relative overflow-hidden rounded-[2rem] bg-indigo-600 px-6 py-12 text-white shadow-2xl shadow-indigo-200/50 sm:px-12 sm:py-16">
-        <div class="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-white/15 blur-3xl"></div>
-        <div class="relative max-w-3xl">
-            <span class="inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-indigo-100">{{ $contactSettings['badge'] }}</span>
-            <h1 class="mt-6 text-4xl font-black tracking-tight sm:text-6xl">{{ $contactSettings['hero_title'] }}</h1>
-            <p class="mt-5 max-w-2xl text-base leading-8 text-indigo-100 sm:text-lg">{{ $contactSettings['hero_text'] }}</p>
-        </div>
+    <div class="mx-auto max-w-3xl py-5 text-center sm:py-8">
+        <p class="text-xs font-black uppercase tracking-[0.22em] text-orange-600">{{ app(\App\Support\SiteBrand::class)->text($contactSettings['badge'] ?: 'Get in touch') }}</p>
+        <h1 class="mt-4 text-4xl font-black tracking-tight text-slate-950 sm:text-6xl">{{ app(\App\Support\SiteBrand::class)->text($contactSettings['hero_title'] ?: "We're Here To Help You.") }}</h1>
+        <p class="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">{{ app(\App\Support\SiteBrand::class)->text($contactSettings['hero_text']) }}</p>
     </div>
-    <div class="mt-8 grid gap-5 md:grid-cols-3">
+    <div class="grid gap-4 md:grid-cols-2">
         @if(!empty($systemSettings['phone']))
-            <a href="tel:{{ $systemSettings['phone'] }}" class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-indigo-200 hover:shadow-lg">
-                <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-xl text-indigo-600">☎</span>
-                <p class="mt-5 text-xs font-bold uppercase tracking-widest text-slate-400">Call us</p>
-                <p class="mt-2 text-lg font-black text-slate-900">{{ $systemSettings['phone'] }}</p>
-                <p class="mt-2 text-sm text-slate-500">For quick order support</p>
+            <a href="tel:{{ $systemSettings['phone'] }}" class="group flex items-center gap-5 rounded-2xl border border-orange-100 bg-gradient-to-br from-white to-orange-50/60 p-5 shadow-sm transition hover:-translate-y-1 hover:border-orange-200 hover:shadow-lg sm:p-7">
+                <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#fb5360] to-[#f58220] text-2xl text-white shadow-md shadow-orange-200">☎</span>
+                <span class="min-w-0 flex-1"><span class="block text-[11px] font-black uppercase tracking-[0.16em] text-orange-600">Phone support</span><span class="mt-1 block text-lg font-black text-slate-900">{{ $systemSettings['phone'] }}</span><span class="mt-1 block text-sm leading-5 text-slate-500">Get in touch with our team for quick assistance and support.</span></span><span aria-hidden="true" class="text-lg text-slate-400 group-hover:text-orange-600">↗</span>
             </a>
         @endif
         @if(!empty($systemSettings['email']))
-            <a href="mailto:{{ $systemSettings['email'] }}" class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-indigo-200 hover:shadow-lg">
-                <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-xl text-indigo-600">✉</span>
-                <p class="mt-5 text-xs font-bold uppercase tracking-widest text-slate-400">Email us</p>
-                <p class="mt-2 break-all text-lg font-black text-slate-900">{{ $systemSettings['email'] }}</p>
-                <p class="mt-2 text-sm text-slate-500">For detailed questions</p>
+            <a href="mailto:{{ $systemSettings['email'] }}" class="group flex items-center gap-5 rounded-2xl border border-orange-100 bg-gradient-to-br from-white to-orange-50/60 p-5 shadow-sm transition hover:-translate-y-1 hover:border-orange-200 hover:shadow-lg sm:p-7">
+                <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#fb5360] to-[#f58220] text-2xl text-white shadow-md shadow-orange-200">✉</span>
+                <span class="min-w-0 flex-1"><span class="block text-[11px] font-black uppercase tracking-[0.16em] text-orange-600">Email support</span><span class="mt-1 block break-all text-lg font-black text-slate-900">{{ $systemSettings['email'] }}</span><span class="mt-1 block text-sm leading-5 text-slate-500">Send us your questions and we'll be happy to assist you.</span></span><span aria-hidden="true" class="text-lg text-slate-400 group-hover:text-orange-600">↗</span>
             </a>
         @endif
     </div>
+    @if(!empty($systemSettings['whatsapp']))
+        @php
+            $whatsappDigits = preg_replace('/\D+/', '', (string) $systemSettings['whatsapp']);
+            $whatsappDigits = str_starts_with($whatsappDigits, '0') ? '880'.ltrim($whatsappDigits, '0') : $whatsappDigits;
+        @endphp
+        <a href="https://wa.me/{{ $whatsappDigits }}" target="_blank" rel="noopener noreferrer" class="group mt-4 flex items-center gap-5 rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition hover:border-orange-200 hover:shadow-lg sm:p-6">
+            <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500 text-xl text-white">◉</span>
+            <span class="min-w-0 flex-1"><span class="block text-[11px] font-black uppercase tracking-[0.16em] text-orange-600">WhatsApp support</span><span class="mt-1 block font-black text-slate-900">{{ $systemSettings['whatsapp'] }}</span><span class="mt-1 block text-sm text-slate-500">Message our team for quick assistance.</span></span>
+            <span aria-hidden="true" class="text-lg text-slate-400 group-hover:text-orange-600">↗</span>
+        </a>
+    @endif
+    <section class="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div class="grid lg:grid-cols-[0.9fr_1.1fr]">
+            <div class="flex flex-col justify-center bg-gradient-to-br from-orange-50 via-white to-rose-50 p-7 sm:p-10">
+                @if(!empty($systemSettings['logo_url']))<img src="{{ $systemSettings['logo_url'] }}" alt="{{ $systemSettings['site_name'] ?? config('app.name') }}" class="mb-8 h-12 max-w-48 object-contain object-left">@else<p class="mb-8 text-xl font-black text-[#f58220]">{{ $systemSettings['site_name'] ?? config('app.name') }}</p>@endif
+                <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-600">{{ config('app.name') }} support</p>
+                <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-950">Need a little help?</h2>
+                <p class="mt-4 text-sm leading-7 text-slate-600">{{ app(\App\Support\SiteBrand::class)->text($contactSettings['form_text']) }}</p>
+                @if(!empty($systemSettings['address']))<p class="mt-6 border-t border-orange-100 pt-5 text-sm leading-6 text-slate-600"><strong class="block text-slate-900">Our location</strong>{{ $systemSettings['address'] }} <a class="mt-1 inline-block font-bold text-orange-700 hover:underline" href="https://www.google.com/maps/search/?api=1&amp;query={{ urlencode($systemSettings['address']) }}" target="_blank" rel="noopener noreferrer">Get directions →</a></p>@endif
+            </div>
+            <div class="grid sm:grid-cols-2">
+                @foreach([
+                    ['Quick Assistance', 'Get help with your questions and concerns.', '⚡'],
+                    ['Download Support', 'Having trouble accessing your digital product?', '↓'],
+                    ['Product Assistance', 'Questions about any of our digital products.', '▣'],
+                    ['Customer Support', 'Our team is ready to assist you.', '◉'],
+                ] as [$title, $description, $icon])
+                    <div class="border-t border-slate-100 p-6 sm:border-l sm:p-8"><span class="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 font-black text-orange-600">{{ $icon }}</span><h3 class="mt-4 font-black text-slate-900">{{ $title }}</h3><p class="mt-2 text-sm leading-6 text-slate-500">{{ $description }}</p></div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+    <section class="mt-6 rounded-3xl bg-gradient-to-r from-[#fb5360] to-[#f58220] p-6 text-white shadow-sm sm:flex sm:items-center sm:justify-between sm:px-9 sm:py-7">
+        <div><p class="text-[11px] font-black uppercase tracking-[0.2em] text-white/80">Have a question?</p><h2 class="mt-2 text-2xl font-black">Let's talk.</h2><p class="mt-1 text-sm text-white/90">Choose your preferred way to contact us.</p></div>
+        <div class="mt-5 flex flex-wrap gap-3 sm:mt-0">@if(!empty($systemSettings['email']))<a href="mailto:{{ $systemSettings['email'] }}" class="rounded-xl bg-white px-5 py-3 text-sm font-bold text-orange-700 transition hover:bg-orange-50">✉ &nbsp; Email Us</a>@endif @if(!empty($systemSettings['phone']))<a href="tel:{{ $systemSettings['phone'] }}" class="rounded-xl border border-white/60 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10">☎ &nbsp; Call Us</a>@endif</div>
+    </section>
     <div class="mt-8 grid items-start gap-8 lg:grid-cols-[1.15fr_0.85fr]">
         <form method="POST" action="{{ route('pages.contact') }}" class="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm sm:p-10">
             @csrf
-            <p class="text-sm font-bold uppercase tracking-widest text-[var(--brand-primary)]">{{ $contactSettings['form_eyebrow'] }}</p>
-            <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">{{ $contactSettings['form_title'] }}</h2>
-            <p class="mt-3 text-sm leading-6 text-slate-500">{{ $contactSettings['form_text'] }}</p>
+            <p class="text-sm font-bold uppercase tracking-widest text-[var(--brand-primary)]">{{ app(\App\Support\SiteBrand::class)->text($contactSettings['form_eyebrow']) }}</p>
+            <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">{{ app(\App\Support\SiteBrand::class)->text($contactSettings['form_title']) }}</h2>
+            <p class="mt-3 text-sm leading-6 text-slate-500">{{ app(\App\Support\SiteBrand::class)->text($contactSettings['form_text']) }}</p>
             <div class="mt-7 grid gap-5 sm:grid-cols-2">
                 <div><label for="contact-name" class="text-sm font-bold text-slate-700">Your name <span class="text-red-500">*</span></label><input id="contact-name" name="name" value="{{ old('name') }}" required autocomplete="name" class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"></div>
                 <div><label for="contact-email" class="text-sm font-bold text-slate-700">Email address <span class="text-red-500">*</span></label><input id="contact-email" type="email" name="email" value="{{ old('email') }}" required autocomplete="email" class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"></div>
@@ -104,69 +130,75 @@
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
                 <p class="text-xs font-bold uppercase tracking-widest text-[var(--brand-primary)]">Support details</p>
                 <div class="mt-5 space-y-4 text-sm text-slate-600">
-                    <p><strong class="block text-slate-900">Support hours</strong>{{ $contactSettings['support_hours'] }}</p>
-                    <p><strong class="block text-slate-900">Response time</strong>{{ $contactSettings['response_time'] }}</p>
+                    <p><strong class="block text-slate-900">Support hours</strong>{{ app(\App\Support\SiteBrand::class)->text($contactSettings['support_hours']) }}</p>
+                    <p><strong class="block text-slate-900">Response time</strong>{{ app(\App\Support\SiteBrand::class)->text($contactSettings['response_time']) }}</p>
                     @if (!empty($systemSettings['address']))<p><strong class="block text-slate-900">Our location</strong>{{ $systemSettings['address'] }} <a class="mt-1 inline-block font-bold text-[var(--brand-primary)] hover:underline" href="https://www.google.com/maps/search/?api=1&query={{ urlencode($systemSettings['address']) }}" target="_blank" rel="noopener">Get directions →</a></p>@endif
                 </div>
             </div>
         </aside>
     </div>
     <div class="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-10">
-        <p class="text-sm font-bold uppercase tracking-widest text-[var(--brand-primary)]">{{ $contactSettings['faq_eyebrow'] }}</p>
-        <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">{{ $contactSettings['faq_title'] }}</h2>
+        <p class="text-sm font-bold uppercase tracking-widest text-[var(--brand-primary)]">{{ app(\App\Support\SiteBrand::class)->text($contactSettings['faq_eyebrow']) }}</p>
+        <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">{{ app(\App\Support\SiteBrand::class)->text($contactSettings['faq_title']) }}</h2>
         <div class="mt-6 grid gap-5 md:grid-cols-2">
             @foreach($contactSettings['faq_items'] as $faq)
-                <details class="group rounded-2xl border border-slate-200 p-5"><summary class="cursor-pointer list-none pr-6 font-bold text-slate-900">{{ $faq['question'] }} <span class="float-right text-[var(--brand-primary)] group-open:rotate-45">+</span></summary><p class="mt-3 text-sm leading-6 text-slate-500">{{ $faq['answer'] }}</p></details>
+                <details class="group rounded-2xl border border-slate-200 p-5"><summary class="cursor-pointer list-none pr-6 font-bold text-slate-900">{{ app(\App\Support\SiteBrand::class)->text($faq['question']) }} <span class="float-right text-[var(--brand-primary)] group-open:rotate-45">+</span></summary><p class="mt-3 text-sm leading-6 text-slate-500">{{ app(\App\Support\SiteBrand::class)->text($faq['answer']) }}</p></details>
             @endforeach
         </div>
     </div>
 </section>
 @else
 @php
-    $policySlugs = ['privacy-policy', 'terms-and-conditions', 'terms-conditions', 'shipping-and-delivery', 'shipping-delivery', 'returns-and-refunds', 'return-and-refund', 'faq', 'frequently-asked-questions'];
+    $policySlugs = ['privacy-policy', 'terms-and-conditions', 'terms-conditions', 'shipping-and-delivery', 'shipping-delivery', 'returns-refunds', 'returns-and-refunds', 'return-and-refund', 'faq', 'frequently-asked-questions'];
     $isPolicyPage = in_array($page->slug, $policySlugs, true);
+    $isRefundPage = in_array($page->slug, ['returns-refunds', 'returns-and-refunds', 'return-and-refund'], true);
+    $contactUrl = $isRefundPage ? route('contact-us') : route('contact');
 @endphp
 @if(in_array($page->slug, ['faq', 'frequently-asked-questions'], true))
 <section class="mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16">
     <div class="max-w-3xl">
         <p class="text-sm font-bold uppercase tracking-[0.2em] text-[var(--brand-primary)]">Quick answers</p>
-        <h1 class="mt-4 text-4xl font-black tracking-tight text-slate-950 sm:text-6xl">{{ $page->title }}</h1>
+        <h1 class="mt-4 text-4xl font-black tracking-tight text-slate-950 sm:text-6xl">{{ app(\App\Support\SiteBrand::class)->text($page->title) }}</h1>
         <p class="mt-5 text-base leading-8 text-slate-500">Find clear answers to the questions our customers ask most.</p>
     </div>
     <div class="mt-10 grid gap-5 md:grid-cols-2">
         @foreach($faqItems as $faq)
             <details class="group min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-[var(--brand-primary)] hover:shadow-md sm:p-6">
-            <summary class="flex cursor-pointer list-none items-start justify-between gap-3 break-words text-base font-bold text-slate-950 sm:text-lg">{{ $faq['question'] ?? '' }}<span class="shrink-0 text-xl text-[var(--brand-primary)] transition group-open:rotate-45">+</span></summary>
-                <p class="mt-4 border-t border-slate-100 pt-4 text-sm leading-7 text-slate-500">{{ $faq['answer'] ?? '' }}</p>
+            <summary class="flex cursor-pointer list-none items-start justify-between gap-3 break-words text-base font-bold text-slate-950 sm:text-lg">{{ app(\App\Support\SiteBrand::class)->text($faq['question'] ?? '') }}<span class="shrink-0 text-xl text-[var(--brand-primary)] transition group-open:rotate-45">+</span></summary>
+                <p class="mt-4 border-t border-slate-100 pt-4 text-sm leading-7 text-slate-500">{{ app(\App\Support\SiteBrand::class)->text($faq['answer'] ?? '') }}</p>
             </details>
         @endforeach
     </div>
 </section>
 @else
-<section class="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
-    <div class="relative overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-10 text-white shadow-2xl sm:px-12 sm:py-14">
-        <div class="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-indigo-500/25 blur-3xl"></div>
-        <div class="relative max-w-3xl">
-            <p class="text-sm font-bold uppercase tracking-[0.2em] text-indigo-300">{{ $isPolicyPage ? 'Customer information' : config('app.name') }}</p>
-            <h1 class="mt-4 text-4xl font-black tracking-tight sm:text-6xl">{{ $page->title }}</h1>
-            <p class="mt-5 max-w-2xl text-base leading-8 text-slate-300">Clear information about our policies, services and customer support.</p>
-        </div>
-    </div>
+<section class="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+    <header class="overflow-hidden rounded-[2rem] border border-orange-100 bg-gradient-to-br from-orange-50 via-white to-rose-50 px-6 py-9 sm:px-10 sm:py-11">
+        <nav class="text-sm font-semibold text-slate-500" aria-label="Breadcrumb"><a href="{{ route('home') }}" class="hover:text-orange-600">Home</a><span class="mx-2">/</span><span class="text-slate-800">{{ app(\App\Support\SiteBrand::class)->text($page->title) }}</span></nav>
+        <p class="mt-6 text-xs font-black uppercase tracking-[0.2em] text-orange-600">{{ $isRefundPage ? 'Customer care · Clear and helpful' : ($isPolicyPage ? 'Customer information' : config('app.name')) }}</p>
+        <h1 class="mt-3 text-4xl font-black tracking-tight text-slate-950 sm:text-5xl">{{ app(\App\Support\SiteBrand::class)->text($page->title) }}</h1>
+        @if($isRefundPage)<p class="mt-3 max-w-2xl text-base leading-7 text-slate-600">Please review our digital product refund and returns policy before placing an order.</p>@endif
+    </header>
     <div class="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_260px]">
-        <article class="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm sm:p-10">
-            <div class="prose prose-slate max-w-none break-words leading-8">{!! $page->content !!}</div>
+        <article class="min-w-0 rounded-3xl border border-slate-200 bg-white px-6 py-7 shadow-sm sm:px-10 sm:py-10">
+            <div class="prose prose-slate max-w-none break-words leading-8 prose-headings:mt-8 prose-headings:font-black prose-headings:tracking-tight prose-headings:text-slate-900 prose-h2:border-t prose-h2:border-orange-100 prose-h2:pt-6 prose-a:text-orange-700 prose-strong:text-slate-900 prose-li:marker:text-orange-500">{!! app(\App\Support\SiteBrand::class)->html($page->content) !!}</div>
         </article>
-        <aside class="space-y-4">
+        <aside class="space-y-4 lg:sticky lg:top-24">
+            @if($isRefundPage && !empty($systemSettings['email']))
+                <a href="mailto:{{ $systemSettings['email'] }}" class="block rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition hover:border-orange-200 hover:shadow-md"><p class="text-xs font-black uppercase tracking-widest text-orange-600">Email support</p><p class="mt-2 break-all font-black text-slate-900">{{ $systemSettings['email'] }}</p></a>
+            @endif
+            @if($isRefundPage && !empty($systemSettings['phone']))
+                <a href="tel:{{ $systemSettings['phone'] }}" class="block rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition hover:border-orange-200 hover:shadow-md"><p class="text-xs font-black uppercase tracking-widest text-orange-600">Phone support</p><p class="mt-2 font-black text-slate-900">{{ $systemSettings['phone'] }}</p></a>
+            @endif
             <div class="rounded-2xl bg-indigo-50 p-5">
                 <p class="text-xs font-bold uppercase tracking-widest text-indigo-700">Need help?</p>
                 <p class="mt-3 text-sm leading-6 text-slate-600">If anything is unclear, our support team is ready to help.</p>
-                <a href="{{ route('contact') }}" class="mt-4 inline-flex rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-700">Contact us →</a>
+                <a href="{{ $contactUrl }}" class="mt-4 inline-flex rounded-xl bg-[#f58220] px-4 py-2.5 text-sm font-bold text-white hover:bg-orange-600">Contact us →</a>
             </div>
             <div class="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-600">
                 <p class="font-bold text-slate-900">Helpful links</p>
                 <div class="mt-3 space-y-2">
                     <a href="{{ route('shop') }}" class="block hover:text-indigo-700">Browse products</a>
-                    <a href="{{ route('contact') }}" class="block hover:text-indigo-700">Contact support</a>
+                    <a href="{{ $contactUrl }}" class="block hover:text-orange-700">Contact support</a>
                 </div>
             </div>
         </aside>

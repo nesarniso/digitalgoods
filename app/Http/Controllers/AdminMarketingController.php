@@ -119,7 +119,7 @@ class AdminMarketingController extends Controller
         foreach ($recipients as $recipient) {
             try {
                 $replacements = [
-                    '{{site_name}}' => config('app.name'),
+                    '{{site_name}}' => app(\App\Support\SiteBrand::class)->name(),
                     '{{site_url}}' => config('app.url'),
                     '{{customer_name}}' => User::query()->where('email', $recipient)->value('name') ?: 'Customer',
                 ];
@@ -260,7 +260,7 @@ class AdminMarketingController extends Controller
 
     private function defaultBody(): string
     {
-        $appName = e(config('app.name'));
+        $appName = e(app(\App\Support\SiteBrand::class)->name());
 
         return <<<HTML
 <!doctype html>

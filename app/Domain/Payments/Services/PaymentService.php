@@ -37,7 +37,7 @@ class PaymentService
      * webhook delivery — collapses onto the same row instead of
      * double-charging.
      */
-    public function initiate(string $method, string $amount, string $idempotencyKey, ?User $payer = null, string $currency = 'BDT', ?Order $order = null, array $manualDetails = []): PaymentTransaction
+    public function initiate(string $method, string $amount, string $idempotencyKey, ?User $payer = null, string $currency = 'INR', ?Order $order = null, array $manualDetails = []): PaymentTransaction
     {
         return DB::transaction(function () use ($method, $amount, $idempotencyKey, $payer, $currency, $order, $manualDetails) {
             if (! empty($manualDetails['manual_transaction_id'])) {

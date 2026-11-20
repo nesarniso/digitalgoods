@@ -51,7 +51,7 @@
                     </span>
                     <span class="min-w-0">
                         <span class="block line-clamp-2 text-sm font-semibold text-slate-800">{{ $product->name }}</span>
-                        <span class="mt-1 block truncate text-xs text-slate-500">{{ $product->category?->name }} · ৳{{ number_format((float) $product->effective_price, 2) }}</span>
+                        <span class="mt-1 block truncate text-xs text-slate-500">{{ $product->category?->name }} · ₹{{ number_format((float) $product->effective_price, 2) }}</span>
                     </span>
                     <span class="ml-auto flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-slate-300 text-xs text-transparent peer-checked:border-orange-500 peer-checked:bg-orange-500 peer-checked:text-white">✓</span>
                 </label>

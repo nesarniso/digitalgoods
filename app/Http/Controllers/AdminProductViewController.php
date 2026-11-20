@@ -2,15 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Catalog\Models\Attribute;
+use App\Domain\Catalog\Models\AttributeValue;
 use App\Domain\Catalog\Models\Brand;
 use App\Domain\Catalog\Models\Category;
 use App\Domain\Catalog\Models\Product;
-use App\Domain\Catalog\Models\Attribute;
-use App\Domain\Catalog\Models\AttributeValue;
+use App\Domain\Catalog\Models\ProductVideo;
 use App\Domain\Catalog\Services\ProductService;
+use App\Domain\Digital\Models\ProductDownloadFile;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use RuntimeException;
+use Throwable;
 
 class AdminProductViewController extends Controller
 {
@@ -71,7 +77,7 @@ class AdminProductViewController extends Controller
     public function edit(Request $request, Product $product)
     {
         return view('admin.products.form', [
-            'product' => $product->load(['images.variant', 'variants.images', 'variants.attributeValues.attribute']),
+            'product' => $product->load(['images.variant', 'videos', 'downloadFiles', 'variants.images', 'variants.attributeValues.attribute']),
             'categories' => Category::query()->orderBy('name')->get(),
             'brands' => Brand::query()->where('is_active', true)->orderBy('name')->get(),
             'attributes' => Attribute::query()->with('values')->orderBy('name')->get(),
@@ -129,6 +135,83 @@ class AdminProductViewController extends Controller
         }
 
         return back()->with('success', count($files).' product image(s) uploaded.');
+    }
+
+    public function addVideo(Request $request, Product $product)
+    {
+        abort_unless($request->user()->can('update', $product), 403);
+        $data = $request->validate([
+            'video' => ['required', 'file', 'mimetypes:video/mp4,video/webm', 'mimes:mp4,webm', 'max:102400'],
+            'title' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $this->products->addVideo($product, $data['video'], $request->user(), $data['title'] ?? null);
+
+        return back()->with('success', 'Product preview video uploaded.');
+    }
+
+    public function destroyVideo(Request $request, Product $product, ProductVideo $video)
+    {
+        abort_unless($request->user()->can('update', $product), 403);
+        $this->products->deleteVideo($product, $video, $request->user());
+
+        return back()->with('success', 'Product preview video deleted.');
+    }
+
+    public function addDownloadFiles(Request $request, Product $product)
+    {
+        abort_unless($request->user()->can('update', $product), 403);
+        $data = $request->validate([
+            'files' => ['required', 'array', 'min:1', 'max:10'],
+            'files.*' => ['required', 'file', 'mimes:zip,rar,7z,pdf,mp4,webm,mov,mp3,epub,doc,docx,xls,xlsx,ppt,pptx,txt,psd,ai,jpg,jpeg,png,webp', 'max:1024000'],
+        ]);
+
+        $disk = Storage::disk('local');
+        $storedPaths = [];
+
+        try {
+            DB::transaction(function () use ($data, $product, $request, &$storedPaths): void {
+                foreach ($data['files'] as $file) {
+                    $path = $file->store('product-downloads/'.$product->id, 'local');
+                    if (! $path) {
+                        throw new RuntimeException('Unable to store a product download file.');
+                    }
+                    $storedPaths[] = $path;
+
+                    $product->downloadFiles()->create([
+                        'path' => $path,
+                        'original_name' => Str::limit(basename($file->getClientOriginalName()), 255, ''),
+                        'mime_type' => $file->getMimeType(),
+                        'file_size' => (int) $file->getSize(),
+                        'created_by' => $request->user()->id,
+                    ]);
+                }
+            });
+        } catch (Throwable $exception) {
+            foreach ($storedPaths as $path) {
+                if ($disk->exists($path) && ! $disk->delete($path)) {
+                    throw new RuntimeException("Unable to clean up failed product download upload {$path}.", previous: $exception);
+                }
+            }
+
+            throw $exception;
+        }
+
+        return back()->with('success', count($data['files']).' product download file(s) uploaded.');
+    }
+
+    public function destroyDownloadFile(Request $request, Product $product, ProductDownloadFile $file)
+    {
+        abort_unless($request->user()->can('update', $product), 403);
+        abort_unless($file->product_id === $product->id, 404);
+
+        $disk = Storage::disk('local');
+        if ($disk->exists($file->path) && ! $disk->delete($file->path)) {
+            throw new RuntimeException("Unable to delete product download file {$file->path}.");
+        }
+        $file->delete();
+
+        return back()->with('success', 'Product download file deleted.');
     }
 
     public function addVariant(Request $request, Product $product)
@@ -196,6 +279,7 @@ class AdminProductViewController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'sku' => [$product ? 'sometimes' : 'required', 'string', 'max:100', $skuRule],
             'product_type' => ['required', 'in:simple,variable,digital'],
+            'download_url' => ['nullable', 'url:https', 'max:2048'],
             'short_description' => ['nullable', 'string', 'max:500'],
             'description' => ['nullable', 'string'],
             'regular_price' => ['required', 'numeric', 'min:0'],

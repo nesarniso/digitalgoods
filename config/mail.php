@@ -41,7 +41,7 @@ return [
 
     'from' => [
         'address' => env('MAIL_FROM_ADDRESS', 'no-reply@example.com'),
-        'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Ecommerce Core')),
+        'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'DigitalGoods')),
     ],
 
 ];

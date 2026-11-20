@@ -102,7 +102,7 @@
                 ['icon' => '▣', 'title' => 'Ready products', 'text' => 'Curated products এবং clear pricing থেকে সহজে product বেছে নিন।'],
                 ['icon' => '↗', 'title' => 'Sell anywhere', 'text' => 'Facebook, WhatsApp, local community বা personal network-এ share করুন।'],
                 ['icon' => '✓', 'title' => 'No inventory stress', 'text' => 'আগে থেকে stock বা warehouse রাখার প্রয়োজন নেই।'],
-                ['icon' => '৳', 'title' => 'Track your profit', 'text' => 'Dashboard-এ order, sale এবং eligible profit track করুন।'],
+                ['icon' => '₹', 'title' => 'Track your profit', 'text' => 'Dashboard-এ order, sale এবং eligible profit track করুন।'],
             ] as $benefit)
                 <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                     <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-100 text-xl font-black text-[var(--brand-primary)]">{{ $benefit['icon'] }}</span>

@@ -12,7 +12,7 @@
         </div>
         <div class="rounded-2xl bg-emerald-50 px-5 py-3 text-emerald-800">
             <p class="text-xs font-bold uppercase tracking-wide">Available balance</p>
-            <p class="mt-1 text-2xl font-black">৳{{ number_format((float) $balance, 2) }}</p>
+            <p class="mt-1 text-2xl font-black">₹{{ number_format((float) $balance, 2) }}</p>
         </div>
     </div>
 
@@ -33,7 +33,7 @@
                 <a href="{{ route('entrepreneur.orders.show', $order) }}" class="rounded-xl border border-slate-200 p-4 transition hover:border-[var(--brand-primary)] hover:bg-slate-50">
                     <p class="truncate text-sm font-bold">{{ $order->user?->name ?: 'Customer' }}</p>
                     <p class="mt-1 truncate text-xs text-slate-500">{{ $order->order_number }}</p>
-                    <p class="mt-3 text-sm font-black">৳{{ number_format((float) $order->grand_total, 2) }}</p>
+                    <p class="mt-3 text-sm font-black">₹{{ number_format((float) $order->grand_total, 2) }}</p>
                     <p class="mt-1 text-xs capitalize text-slate-500">{{ str_replace('_', ' ', $order->status) }}</p>
                 </a>
             @empty

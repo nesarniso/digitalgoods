@@ -50,6 +50,9 @@ class DigitalLicenseService
             if ($item->product->product_type !== 'digital') {
                 continue;
             }
+            if ($item->product->download_url || $item->product->downloadFiles()->exists()) {
+                continue;
+            }
 
             $alreadyAssigned = $licenses->where('order_item_id', $item->id)->count();
             $needed = $item->quantity - $alreadyAssigned;

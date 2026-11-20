@@ -5,13 +5,15 @@ namespace App\Domain\Catalog\Services;
 use App\Domain\Audit\Services\AuditLogger;
 use App\Domain\Catalog\Models\Product;
 use App\Domain\Catalog\Models\ProductImage;
+use App\Domain\Catalog\Models\ProductVideo;
 use App\Domain\Catalog\Models\ProductVariant;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use RuntimeException;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use RuntimeException;
 
 /**
  * Sole entry point for product mutation. `vendor_id` is accepted but stays
@@ -43,6 +45,7 @@ class ProductService
                 'sku' => $data['sku'],
                 'barcode' => $data['barcode'] ?? null,
                 'product_type' => $productType,
+                'download_url' => $data['download_url'] ?? null,
                 'unit' => $data['unit'] ?? null,
                 'description' => $data['description'] ?? null,
                 'short_description' => $data['short_description'] ?? null,
@@ -391,6 +394,140 @@ class ProductService
         Storage::disk('media')->delete($image->path);
         $image->delete();
         $this->auditLogger->log(actor: $actor, action: 'image_deleted', module: 'Catalog', entityType: 'ProductImage', entityId: (string) $image->id, newValue: ['product_id' => $product->id]);
+    }
+
+    public function addVideo(Product $product, UploadedFile $file, User $actor, ?string $title = null): ProductVideo
+    {
+        $sourceHash = hash_file('sha256', $file->getRealPath());
+        if (! is_string($sourceHash)) {
+            throw new RuntimeException('The product video could not be read.');
+        }
+        if ($product->videos()->where('source_hash', $sourceHash)->exists()) {
+            throw ValidationException::withMessages(['video' => 'This video has already been added to this product.']);
+        }
+
+        $mimeType = $file->getMimeType();
+        $extension = match ($mimeType) {
+            'video/mp4' => 'mp4',
+            'video/webm' => 'webm',
+            default => throw ValidationException::withMessages(['video' => 'Upload an MP4 or WebM video.']),
+        };
+        $path = 'product-videos/admin/'.$product->id.'/'.Str::uuid().'.'.$extension;
+        if (! is_string($file->storeAs(dirname($path), basename($path), 'media'))) {
+            throw new RuntimeException('The product video could not be stored.');
+        }
+
+        try {
+            $video = ProductVideo::create([
+                'product_id' => $product->id,
+                'source_hash' => $sourceHash,
+                'source_url' => url('/storage/media/'.$path),
+                'path' => $path,
+                'title' => filled($title) ? $title : Str::limit(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME), 255, ''),
+                'mime_type' => $mimeType,
+                'sort_order' => ((int) $product->videos()->max('sort_order')) + 1,
+            ]);
+        } catch (\Throwable $exception) {
+            if (! ProductVideo::query()->where('path', $path)->exists()
+                && Storage::disk('media')->exists($path)
+                && ! Storage::disk('media')->delete($path)) {
+                throw new RuntimeException("Unable to clean up failed video upload {$path}.", previous: $exception);
+            }
+
+            throw $exception;
+        }
+
+        $this->auditLogger->log(
+            actor: $actor, action: 'video_added', module: 'Catalog',
+            entityType: 'ProductVideo', entityId: (string) $video->id,
+            newValue: ['product_id' => $product->id, 'path' => $path, 'title' => $video->title],
+        );
+
+        return $video;
+    }
+
+    public function replaceVideo(Product $product, ProductVideo $video, ?UploadedFile $file, User $actor, ?string $title): ProductVideo
+    {
+        abort_unless($video->product_id === $product->id, 404);
+
+        $oldPath = $video->path;
+        $newPath = $oldPath;
+        $attributes = ['title' => $title];
+
+        if ($file !== null) {
+            $sourceHash = hash_file('sha256', $file->getRealPath());
+            if (! is_string($sourceHash)) {
+                throw new RuntimeException('The product video could not be read.');
+            }
+            if ($product->videos()->where('source_hash', $sourceHash)->whereKeyNot($video->id)->exists()) {
+                throw ValidationException::withMessages(['video' => 'This video has already been added to this product.']);
+            }
+
+            $mimeType = $file->getMimeType();
+            $extension = match ($mimeType) {
+                'video/mp4' => 'mp4',
+                'video/webm' => 'webm',
+                default => throw ValidationException::withMessages(['video' => 'Upload an MP4 or WebM video.']),
+            };
+            $newPath = 'product-videos/admin/'.$product->id.'/'.Str::uuid().'.'.$extension;
+            if (! is_string($file->storeAs(dirname($newPath), basename($newPath), 'media'))) {
+                throw new RuntimeException('The replacement product video could not be stored.');
+            }
+
+            $attributes += [
+                'source_hash' => $sourceHash,
+                'source_url' => url('/storage/media/'.$newPath),
+                'path' => $newPath,
+                'mime_type' => $mimeType,
+            ];
+        }
+
+        try {
+            $video->update($attributes);
+        } catch (\Throwable $exception) {
+            if ($newPath !== $oldPath && Storage::disk('media')->exists($newPath)
+                && ! Storage::disk('media')->delete($newPath)) {
+                throw new RuntimeException("Unable to clean up failed video replacement {$newPath}.", previous: $exception);
+            }
+
+            throw $exception;
+        }
+
+        $this->auditLogger->log(
+            actor: $actor, action: 'video_updated', module: 'Catalog',
+            entityType: 'ProductVideo', entityId: (string) $video->id,
+            newValue: ['product_id' => $product->id, 'path' => $newPath, 'title' => $video->title],
+        );
+
+        if ($newPath !== $oldPath
+            && ! ProductVideo::query()->where('path', $oldPath)->exists()
+            && Storage::disk('media')->exists($oldPath)
+            && ! Storage::disk('media')->delete($oldPath)) {
+            throw new RuntimeException("Unable to remove replaced product video {$oldPath}.");
+        }
+
+        return $video->fresh();
+    }
+
+    public function deleteVideo(Product $product, ProductVideo $video, User $actor): void
+    {
+        abort_unless($video->product_id === $product->id, 404);
+        $path = $video->path;
+
+        DB::transaction(function () use ($video, $path): void {
+            $video->delete();
+            $isShared = ProductVideo::query()->where('path', $path)->exists();
+            if (! $isShared && Storage::disk('media')->exists($path)
+                && ! Storage::disk('media')->delete($path)) {
+                throw new RuntimeException("Unable to remove product video {$path}.");
+            }
+        });
+
+        $this->auditLogger->log(
+            actor: $actor, action: 'video_deleted', module: 'Catalog',
+            entityType: 'ProductVideo', entityId: (string) $video->id,
+            oldValue: ['product_id' => $product->id, 'path' => $path],
+        );
     }
 
     /**

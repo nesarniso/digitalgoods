@@ -18,26 +18,35 @@
     <title>@yield('title', config('app.name'))</title>
     @if(file_exists(public_path('build/manifest.json'))) @vite(['resources/css/app.css', 'resources/js/app.js']) @endif
 </head>
-<body data-authenticated="{{ auth()->check() ? '1' : '0' }}" class="storefront-shell min-h-screen overflow-x-hidden bg-[#f7f8fa] text-slate-900 antialiased" style="--brand-primary: {{ $systemSettings['brand_color'] ?? '#f97316' }};">
+<body data-authenticated="{{ auth()->check() ? '1' : '0' }}" data-cart-drawer-enabled="{{ request()->routeIs('home', 'shop') ? '1' : '0' }}" class="storefront-shell min-h-screen overflow-x-hidden bg-[#f7f8fa] text-slate-900 antialiased" style="--brand-primary: {{ $systemSettings['brand_color'] ?? '#f97316' }};">
     <header data-storefront-header class="relative z-40 border-b border-slate-200 bg-white text-slate-900 shadow-sm">
-        <div data-header-topbar class="mx-auto max-w-5xl px-4 py-1.5 text-[11px] text-slate-600 sm:px-6">
-            <div class="flex items-center justify-between gap-3">
+        <div data-header-topbar class="bg-[#fb5360] text-white">
+            <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 text-[11px] font-semibold sm:px-6">
+                <div class="flex items-center gap-4">
+                    <span>✦ Creative collections</span>
+                    @if (!empty($systemSettings['email']))
+                        <a href="mailto:{{ $systemSettings['email'] }}" class="hidden items-center gap-1.5 sm:flex">✉ {{ $systemSettings['email'] }}</a>
+                    @endif
+                    @if (!empty($systemSettings['phone']))
+                        <a href="tel:{{ $systemSettings['phone'] }}" class="hidden items-center gap-1.5 md:flex">▯ {{ $systemSettings['phone'] }}</a>
+                    @endif
+                </div>
+                <span class="hidden sm:block">Discover digital collections · Explore something new</span>
                 <div class="flex items-center gap-3">
-                    <span class="font-bold text-slate-700">☎</span>
-                    <span>{{ $systemSettings['phone'] ?? '' }}</span>
+                    @foreach (['facebook_url' => 'f', 'instagram_url' => '◎', 'youtube_url' => '▶'] as $key => $icon)
+                        @if (!empty($footerSettings[$key]))
+                            <a href="{{ $footerSettings[$key] }}" target="_blank" rel="noopener noreferrer" aria-label="{{ ucfirst(str_replace('_url', '', $key)) }}" class="text-sm">{{ $icon }}</a>
+                        @endif
+                    @endforeach
                 </div>
             </div>
         </div>
 
-        <div data-header-main class="mx-auto max-w-5xl px-4 pb-3 sm:px-6">
-            <div class="flex flex-wrap items-center gap-3 sm:flex-nowrap sm:gap-5">
-                <div class="flex items-center gap-3">
-                    <a href="{{ route('home') }}" class="max-w-[190px] truncate whitespace-nowrap text-lg font-black tracking-tight text-[var(--brand-primary)] sm:max-w-none sm:text-xl">
-                        @if (!empty($systemSettings['logo_url']))
-                            <img src="{{ $systemSettings['logo_url'] }}" alt="{{ $systemSettings['site_name'] }}" class="h-10 max-w-[150px] object-contain">
-                        @else
-                            {{ $systemSettings['site_name'] ?? config('app.name') }}
-                        @endif
+        <div data-header-main class="mx-auto max-w-5xl px-4 pb-3 sm:px-4">
+            <div class="flex flex-wrap items-center gap-3 py-2 sm:flex-nowrap sm:gap-5">
+                <div class="worklinc-brand flex items-center gap-3">
+                    <a href="{{ route('home') }}" class="whitespace-nowrap text-lg font-black tracking-tight text-[var(--brand-primary)] sm:text-xl" aria-label="{{ $systemSettings['site_name'] ?? config('app.name') }}">
+                        <span class="text-[#f58220]">{{ Str::substr($systemSettings['site_name'] ?? config('app.name'), 0, 1) }}</span><span class="text-[#e44939]">{{ Str::upper(Str::substr($systemSettings['site_name'] ?? config('app.name'), 1)) }}</span>
                     </a>
                 </div>
 
@@ -47,42 +56,54 @@
                     <button class="flex h-9 w-11 items-center justify-center bg-[var(--brand-primary)] text-base font-bold text-white hover:opacity-90">⌕</button>
                 </form>
 
-                <div class="ml-auto flex shrink-0 items-center gap-2 text-xs text-slate-600 sm:gap-3">
+                <div data-header-actions class="ml-auto flex shrink-0 items-center gap-2 text-xs text-slate-600 sm:gap-3">
                     @auth
-                        <a href="{{ route('account.wishlist') }}" class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-lg text-[var(--brand-primary)]" aria-label="Wishlist">♡</a>
                         <a href="{{ route('account.notifications') }}" class="relative flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm text-[var(--brand-primary)]" aria-label="Notifications">🔔@if(auth()->user()->unreadNotifications()->count())<span class="absolute -right-1 -top-1 rounded-full bg-red-600 px-1.5 text-[9px] font-bold text-white">{{ auth()->user()->unreadNotifications()->count() }}</span>@endif</a>
                     @endauth
-                    <a href="{{ auth()->check() ? route('account.index') : route('account.login') }}" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[var(--brand-primary)]" style="border-radius: 9999px; background-color: #f1f5f9;" aria-label="Customer account">
+                    <a href="{{ auth()->check() ? route('account.index') : route('account.login') }}" class="hidden shrink-0 text-xs font-semibold text-slate-800 sm:inline">
+                        {{ auth()->check() ? 'My account' : 'Login / Register' }}
+                    </a>
+                    <a href="{{ auth()->check() ? route('account.wishlist') : route('account.login') }}" class="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl text-slate-800" aria-label="Wishlist">♡<span class="absolute -right-0.5 -top-0.5 min-w-4 rounded-full bg-[var(--brand-primary)] px-1 text-center text-[9px] font-bold text-white">0</span></a>
+                    <a href="{{ auth()->check() ? route('account.compare') : route('shop') }}" class="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg text-slate-800 sm:flex" aria-label="Compare products">⇄</a>
+                    <a href="{{ auth()->check() ? route('account.index') : route('account.login') }}" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[var(--brand-primary)] sm:hidden" aria-label="Customer account">
                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                             <circle cx="12" cy="8" r="4"></circle>
                             <path d="M4.5 21a7.5 7.5 0 0 1 15 0H4.5Z"></path>
                         </svg>
                     </a>
                     <a href="{{ route('cart') }}" class="flex items-center gap-1.5 sm:gap-2">
-                        <span class="text-lg text-[var(--brand-primary)]">🛒</span>
-                        <span class="hidden sm:inline">My cart<br><strong><span data-cart-count>0</span> item(s) · <span data-cart-total>৳0.00</span>⌄</strong></span>
+                        <svg class="h-6 w-6 text-slate-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 4h2l2 12h10l3-8H6"/><circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg>
+                        <span class="hidden items-center gap-1 text-xs font-bold sm:flex"><span data-cart-count>0</span><span data-cart-total>₹0.00</span></span>
                     </a>
                 </div>
             </div>
         </div>
 
-        <nav data-header-nav class="bg-[var(--brand-primary)] text-white">
-            <div class="mx-auto flex max-w-5xl items-center gap-2 overflow-x-auto px-4 py-2 sm:gap-5 sm:px-6">
-                <button type="button" data-category-drawer-toggle class="flex min-w-[145px] items-center justify-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-bold text-[var(--brand-primary)] shadow-sm sm:min-w-[180px] lg:pointer-events-none">
-                    <span>▦</span>
-                    <span>Categories</span>
-                    <span class="ml-auto">⌄</span>
-                </button>
-                <div class="hidden items-center gap-7 text-xs font-medium md:flex">
-                    <a href="{{ route('home') }}" class="hover:text-white/80">Home</a>
-                    <a href="{{ route('shop') }}" class="hover:text-white/80">Brand</a>
-                    <a href="{{ route('contact') }}" class="hover:text-white/80">Contact</a>
-                </div>
-                @guest
-                    <div class="ml-auto hidden items-center gap-3 text-sm md:flex">
-                        <a href="{{ route('account.login') }}" class="hover:text-white/80">Login</a>
+        <nav data-header-nav class="worklinc-nav border-t border-slate-100 bg-white text-slate-800">
+            <div class="mx-auto flex max-w-5xl items-center gap-3 px-4 sm:px-4">
+                <div class="worklinc-category-menu group relative shrink-0">
+                    <a href="{{ route('shop') }}" class="flex items-center gap-2 rounded-t-xl bg-[#f58220] px-4 py-3 text-xs font-bold text-white sm:min-w-[220px] sm:text-sm">
+                        <span aria-hidden="true">☰</span><span>Browse Categories</span><span class="ml-auto">⌄</span>
+                    </a>
+                    <div class="worklinc-category-dropdown invisible absolute left-0 top-full z-50 max-h-[70vh] w-64 overflow-y-auto rounded-b-xl border border-slate-100 bg-white p-2 opacity-0 shadow-xl transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                        @foreach ($categories as $category)
+                            <a href="{{ route('shop', ['category' => $category->slug]) }}" class="block rounded-lg px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-[var(--brand-primary)]">{{ $category->name }}</a>
+                            @foreach ($category->children as $child)
+                                <a href="{{ route('shop', ['category' => $child->slug]) }}" class="block rounded-lg py-2 pl-7 pr-3 text-xs text-slate-500 hover:bg-orange-50 hover:text-[var(--brand-primary)]">↳ {{ $child->name }}</a>
+                            @endforeach
+                        @endforeach
                     </div>
-                @endguest
+                </div>
+                <div class="flex min-w-0 flex-1 items-center gap-5 overflow-x-auto py-0 text-[13px] font-bold md:gap-6">
+                    <a href="{{ route('home') }}" class="shrink-0 py-4 text-[var(--brand-primary)]">Home</a>
+                    <a href="{{ route('shop') }}" class="shrink-0 py-4 hover:text-[var(--brand-primary)]">Shop</a>
+                    <a href="{{ route('reels') }}" class="shrink-0 py-4 hover:text-[var(--brand-primary)]">Previews</a>
+                    <a href="{{ route('shop', ['sort' => 'price_low']) }}" class="shrink-0 py-4 hover:text-[var(--brand-primary)]">Offers</a>
+                    <a href="{{ route('blog.index') }}" class="shrink-0 py-4 hover:text-[var(--brand-primary)]">Blog</a>
+                    <a href="{{ route('about-us') }}" class="hidden shrink-0 py-4 hover:text-[var(--brand-primary)] lg:block">About Us</a>
+                    <a href="{{ route('contact-us') }}" class="shrink-0 py-4 hover:text-[var(--brand-primary)]">Contact Us</a>
+                    <a href="{{ route('refund-returns') }}" class="hidden shrink-0 py-4 hover:text-[var(--brand-primary)] lg:block">Refund &amp; Returns</a>
+                </div>
             </div>
         </nav>
     </header>
@@ -90,6 +111,35 @@
     @if (!request()->routeIs('home') || empty($homeSettings['hero_enabled']))
         @include('components.storefront.mobile-category-drawer')
     @endif
+    <div data-mini-cart-overlay data-mini-cart-close class="fixed inset-0 z-[95] hidden bg-slate-950/60 opacity-0 transition-opacity duration-200" aria-hidden="true"></div>
+    <aside data-mini-cart-drawer class="invisible pointer-events-none fixed inset-y-0 right-0 z-[100] flex w-full max-w-[340px] translate-x-full flex-col bg-white text-slate-900 shadow-2xl transition-transform duration-300" role="dialog" aria-modal="true" aria-labelledby="mini-cart-title" aria-hidden="true" tabindex="-1">
+        <header class="flex items-center justify-between border-b border-slate-200 px-4 py-4">
+            <h2 id="mini-cart-title" class="text-lg font-extrabold">Shopping cart</h2>
+            <button type="button" data-mini-cart-close class="inline-flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-slate-900" aria-label="Close shopping cart">
+                <span aria-hidden="true" class="text-xl leading-none">×</span> Close
+            </button>
+        </header>
+        <div data-mini-cart-items class="min-h-0 flex-1 overflow-y-auto divide-y divide-slate-200 px-4"></div>
+        <footer class="border-t border-slate-200 px-4 pb-4 pt-3">
+            <div class="flex items-center justify-between gap-3 text-lg font-extrabold">
+                <span>Subtotal:</span>
+                <span data-mini-cart-subtotal class="text-orange-500">₹0.00</span>
+            </div>
+            <div data-mini-cart-discount-row class="mt-2 hidden items-center justify-between gap-3 text-sm font-semibold text-emerald-700">
+                <span>Discount</span>
+                <span data-mini-cart-discount></span>
+            </div>
+            <div class="mt-2 flex items-center justify-between gap-3 border-t border-slate-200 pt-2 text-sm font-bold">
+                <span>Total:</span>
+                <span data-mini-cart-total></span>
+            </div>
+            <div data-mini-cart-coupon-message class="mt-3 text-sm leading-5 text-slate-500"></div>
+            <div class="mt-3 grid gap-2">
+                <a href="{{ route('cart') }}" class="rounded-full bg-slate-100 px-4 py-2.5 text-center text-xs font-bold text-slate-700 hover:bg-slate-200">View Cart</a>
+                <a data-mini-cart-checkout href="{{ route('checkout') }}" class="rounded-full bg-orange-500 px-4 py-2.5 text-center text-xs font-bold text-white hover:bg-orange-600">Checkout</a>
+            </div>
+        </footer>
+    </aside>
     <div data-quick-view-modal class="fixed inset-0 z-[90] hidden items-center justify-center overflow-y-auto bg-slate-950/55 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="quick-view-title">
         <div class="relative my-auto w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl">
             <button type="button" data-quick-view-close class="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-xl text-slate-500 shadow-sm hover:text-slate-900" aria-label="Close quick view">×</button>
@@ -166,5 +216,6 @@
             });
         })();
     </script>
+    @stack('scripts')
 </body>
 </html>

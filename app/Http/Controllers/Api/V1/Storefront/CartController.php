@@ -141,7 +141,7 @@ class CartController extends Controller
         $response = response()->json([
             'success' => true,
             'message' => 'Cart retrieved.',
-            'data' => new CartResource($cart->load('items.product', 'items.variant.attributeValues.attribute')),
+            'data' => new CartResource($cart->load('items.product.images', 'items.variant.attributeValues.attribute')),
             'meta' => (object) [],
         ], $status);
 

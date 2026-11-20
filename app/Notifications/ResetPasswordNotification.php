@@ -30,7 +30,7 @@ class ResetPasswordNotification extends BaseResetPassword
     public function toMail($notifiable): MailMessage
     {
         $rendered = app(EmailTemplateService::class)->render('password_reset', [
-            'site_name' => config('app.name'),
+            'site_name' => app(\App\Support\SiteBrand::class)->name(),
             'customer_name' => $notifiable->name,
             'reset_url' => $this->resetUrl($notifiable),
         ]);

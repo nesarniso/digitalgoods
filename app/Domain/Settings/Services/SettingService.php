@@ -6,6 +6,7 @@ use App\Domain\Audit\Services\AuditLogger;
 use App\Domain\Settings\Models\Setting;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 
 /**
  * Sole public entry point for reading/writing dynamic settings. Callers
@@ -44,6 +45,12 @@ class SettingService
         );
 
         $this->flush();
+        if ($key === 'system.site_name') {
+            $siteName = trim((string) $value);
+            if ($siteName !== '') {
+                Config::set('app.name', $siteName);
+            }
+        }
 
         $this->auditLogger->log(
             actor: $actor,

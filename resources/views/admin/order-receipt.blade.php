@@ -74,16 +74,16 @@
             <thead><tr><th>Item</th><th>Qty</th><th>Unit price</th><th>Total</th></tr></thead>
             <tbody>
                 @foreach($order->items as $item)
-                    <tr><td>{{ $item->product_name }}{{ $item->variant_label ? ' ('.$item->variant_label.')' : '' }}</td><td>{{ $item->quantity }}</td><td>৳{{ number_format((float) $item->unit_price, 2) }}</td><td>৳{{ number_format((float) $item->line_total, 2) }}</td></tr>
+                    <tr><td>{{ $item->product_name }}{{ $item->variant_label ? ' ('.$item->variant_label.')' : '' }}</td><td>{{ $item->quantity }}</td><td>₹{{ number_format((float) $item->unit_price, 2) }}</td><td>₹{{ number_format((float) $item->line_total, 2) }}</td></tr>
                 @endforeach
             </tbody>
         </table>
         <div class="summary">
             <dl>
-                <div><dt>Subtotal</dt><dd>৳{{ number_format((float) $order->subtotal, 2) }}</dd></div>
-                <div><dt>Discount</dt><dd>- ৳{{ number_format((float) $order->discount_amount, 2) }}</dd></div>
-                <div><dt>Shipping</dt><dd>৳{{ number_format((float) $order->shipping_amount, 2) }}</dd></div>
-                <div class="total"><dt>Total</dt><dd>৳{{ number_format((float) $order->grand_total, 2) }}</dd></div>
+                <div><dt>Subtotal</dt><dd>₹{{ number_format((float) $order->subtotal, 2) }}</dd></div>
+                <div><dt>Discount</dt><dd>- ₹{{ number_format((float) $order->discount_amount, 2) }}</dd></div>
+                <div><dt>Shipping</dt><dd>₹{{ number_format((float) $order->shipping_amount, 2) }}</dd></div>
+                <div class="total"><dt>Total</dt><dd>₹{{ number_format((float) $order->grand_total, 2) }}</dd></div>
             </dl>
         </div>
         <p style="margin-top: 24px">Payment: <strong>{{ Str::headline($order->payment_method) }}</strong> · <span class="paid">{{ $paymentStatus }}</span></p>

@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Mail;
 use App\Domain\Commerce\Models\Coupon;
+use Illuminate\Support\Collection;
 
 class CustomerAccountController extends Controller
 {
@@ -37,10 +38,19 @@ class CustomerAccountController extends Controller
             ->whereIn('product_id', $orderItems->pluck('product_id')->filter()->unique())
             ->get(['order_id', 'product_id', 'status'])
             ->keyBy(fn (ProductReview $review): string => $review->order_id.':'.$review->product_id);
+        $digitalDownloads = $user->orders()
+            ->where('status', 'delivered')
+            ->whereIn('payment_status', ['paid', 'partially_refunded'])
+            ->whereHas('items.product', fn ($query) => $query->where('product_type', 'digital'))
+            ->with('items.product.downloadFiles')
+            ->get()
+            ->flatMap(fn (Order $order) => $this->digitalDeliveriesForOrder($order))
+            ->values();
 
         return view('storefront.account.index', [
             'orders' => $orders,
             'reviewedPurchases' => $reviewedPurchases,
+            'digitalDownloads' => $digitalDownloads,
             'digitalLicenses' => $user->orders()
                 ->whereIn('status', ['confirmed', 'processing', 'delivered'])
                 ->with(['digitalLicenses' => fn ($query) => $query->where('status', 'assigned')->with('product')])
@@ -104,7 +114,7 @@ class CustomerAccountController extends Controller
             'expires_at' => now()->addMinutes(10)->timestamp,
         ]);
 
-        Mail::raw("Your ".config('app.name')." email change confirmation code is {$code}. It expires in 10 minutes.", function ($message) use ($data): void {
+        Mail::raw("Your ".app(\App\Support\SiteBrand::class)->name()." email change confirmation code is {$code}. It expires in 10 minutes.", function ($message) use ($data): void {
             $message->to($data['email'])->subject('Confirm your email change');
         });
 
@@ -185,7 +195,7 @@ class CustomerAccountController extends Controller
     {
         abort_unless($order->user_id === $request->user()->id, 404);
 
-        $with = ['items.product', 'items.variant.attributeValues.attribute', 'items.returnRequests', 'returnRequests.item', 'shippingAddress', 'statusHistory', 'latestPaymentTransaction'];
+        $with = ['items.product.downloadFiles', 'items.variant.attributeValues.attribute', 'items.returnRequests', 'returnRequests.item', 'shippingAddress', 'statusHistory', 'latestPaymentTransaction'];
         if (Schema::hasTable('shipments')) {
             $with[] = 'latestShipment';
         }
@@ -203,11 +213,46 @@ class CustomerAccountController extends Controller
                     'instructions' => $license->instructions,
                 ])
             : collect();
+        $digitalDeliveries = $this->digitalDeliveriesForOrder($order);
 
         return view('storefront.account.order', [
             'order' => $order,
             'digitalLicenses' => $digitalLicenses,
+            'digitalDeliveries' => $digitalDeliveries,
         ]);
+    }
+
+    private function digitalDeliveriesForOrder(Order $order): Collection
+    {
+        if ($order->status !== 'delivered' || ! $order->isPaid()) {
+            return collect();
+        }
+
+        return $order->items
+            ->filter(fn ($item) => $item->product?->product_type === 'digital')
+            ->unique('product_id')
+            ->flatMap(function ($item) use ($order) {
+                $deliveries = $item->product->downloadFiles->map(fn ($file) => [
+                    'product_name' => $item->product_name,
+                    'order_number' => $order->order_number,
+                    'file_name' => $file->original_name,
+                    'url' => route('account.orders.downloads.file', [$order, $file]),
+                    'external' => false,
+                ]);
+
+                if (filled($item->product->download_url)) {
+                    $deliveries->prepend([
+                        'product_name' => $item->product_name,
+                        'order_number' => $order->order_number,
+                        'file_name' => 'Open download link',
+                        'url' => $item->product->download_url,
+                        'external' => true,
+                    ]);
+                }
+
+                return $deliveries;
+            })
+            ->values();
     }
 
     public function requestReturn(StoreReturnRequest $request, Order $order, int $item)

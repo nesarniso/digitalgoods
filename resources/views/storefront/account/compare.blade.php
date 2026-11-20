@@ -14,7 +14,7 @@
             <table class="min-w-[680px] w-full text-left text-sm">
                 <thead><tr class="border-b border-slate-200">@foreach($items as $item)<th class="min-w-[180px] p-5 align-top"><div class="h-32 overflow-hidden rounded-xl bg-slate-100">@if($item->product->images->first())<img src="{{ $item->product->images->first()->url }}" alt="{{ $item->product->name }}" class="h-full w-full object-cover">@endif</div><a href="{{ route('products.show', $item->product->slug) }}" class="mt-3 block font-bold text-slate-800">{{ $item->product->name }}</a></th>@endforeach</tr></thead>
                 <tbody class="divide-y divide-slate-100">
-                    <tr>@foreach($items as $item)<td class="p-5"><span class="text-slate-500">Price</span><p class="mt-1 text-lg font-black">৳{{ number_format((float) $item->product->effective_price, 2) }}</p></td>@endforeach</tr>
+                    <tr>@foreach($items as $item)<td class="p-5"><span class="text-slate-500">Price</span><p class="mt-1 text-lg font-black">₹{{ number_format((float) $item->product->effective_price, 2) }}</p></td>@endforeach</tr>
                     <tr>@foreach($items as $item)<td class="p-5"><span class="text-slate-500">Brand</span><p class="mt-1 font-semibold">{{ $item->product->brand?->name ?: '—' }}</p></td>@endforeach</tr>
                     <tr>@foreach($items as $item)<td class="p-5"><span class="text-slate-500">SKU</span><p class="mt-1 font-semibold">{{ $item->product->sku }}</p></td>@endforeach</tr>
                     <tr>@foreach($items as $item)<td class="p-5"><span class="text-slate-500">Description</span><p class="mt-1 text-slate-700">{{ Str::limit(strip_tags($item->product->short_description ?: $item->product->description), 130) ?: '—' }}</p></td>@endforeach</tr>

@@ -46,19 +46,33 @@ class PageController extends Controller
         return view('storefront.page', compact('page', 'contactSettings'));
     }
 
+    public function aboutPage(SettingService $settings)
+    {
+        return $this->show(Page::query()->where('slug', 'about-us')->firstOrFail(), $settings);
+    }
+
+    public function refundsPage(SettingService $settings)
+    {
+        return $this->show(Page::query()->where('slug', 'returns-refunds')->firstOrFail(), $settings);
+    }
+
     private function contactSettings(SettingService $settings): array
     {
         $faqItems = json_decode((string) $settings->get('contact.faq_items', ''), true);
 
         return [
-            'badge' => $settings->get('contact.badge', 'Customer care'),
-            'hero_title' => $settings->get('contact.hero_title', 'We are here to help.'),
-            'hero_text' => $settings->get('contact.hero_text', 'Have a question about a product or order? Reach out and our team will get back to you as soon as possible.'),
+            'badge' => $settings->get('contact.badge', 'Get in touch'),
+            'hero_title' => $settings->get('contact.hero_title', "We're Here To Help You."),
+            'hero_text' => $settings->get('contact.hero_text', 'Have a question about our digital products? Need assistance with your purchase? Our team is ready to help.'),
             'form_eyebrow' => $settings->get('contact.form_eyebrow', 'Send a message'),
-            'form_title' => $settings->get('contact.form_title', 'How can we help?'),
-            'form_text' => $settings->get('contact.form_text', 'Share the details below. We normally respond within 24 hours.'),
+            'form_title' => $settings->get('contact.form_title', 'Need a little help?'),
+            'form_text' => $settings->get('contact.form_text', "Whether it's a product question, download assistance, or anything related to your purchase, don't hesitate to reach out."),
             'support_hours' => $settings->get('contact.support_hours', 'Saturday–Thursday, 10:00 AM–8:00 PM (BST)'),
             'response_time' => $settings->get('contact.response_time', 'We usually reply within 24 hours.'),
+            'email' => $settings->get('system.email', ''),
+            'phone' => $settings->get('system.phone', ''),
+            'whatsapp' => $settings->get('system.whatsapp', ''),
+            'address' => $settings->get('system.address', ''),
             'faq_eyebrow' => $settings->get('contact.faq_eyebrow', 'Quick answers'),
             'faq_title' => $settings->get('contact.faq_title', 'Before you contact us'),
             'faq_items' => is_array($faqItems) ? $faqItems : [

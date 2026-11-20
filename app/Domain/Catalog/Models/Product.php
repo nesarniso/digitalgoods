@@ -3,6 +3,7 @@
 namespace App\Domain\Catalog\Models;
 
 use App\Domain\Entrepreneurs\Models\EntrepreneurProduct;
+use App\Domain\Digital\Models\ProductDownloadFile;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,7 +17,7 @@ class Product extends Model
 
     protected $fillable = [
         'uuid', 'vendor_id', 'category_id', 'brand_id',
-        'name', 'slug', 'sku', 'barcode', 'product_type', 'unit',
+        'name', 'slug', 'sku', 'barcode', 'product_type', 'download_url', 'unit',
         'description', 'short_description',
         'purchase_price', 'entrepreneur_profit_percent', 'entrepreneur_profit_flat_rate', 'regular_price', 'sale_price', 'tax_rate',
         'weight', 'length', 'width', 'height',
@@ -45,6 +46,11 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(Category::class, 'product_category');
+    }
+
     public function brand(): BelongsTo
     {
         return $this->belongsTo(Brand::class);
@@ -63,6 +69,16 @@ class Product extends Model
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class)->whereNull('product_variant_id');
+    }
+
+    public function videos(): HasMany
+    {
+        return $this->hasMany(ProductVideo::class)->orderBy('sort_order');
+    }
+
+    public function downloadFiles(): HasMany
+    {
+        return $this->hasMany(ProductDownloadFile::class)->orderBy('id');
     }
 
     public function reviews(): HasMany

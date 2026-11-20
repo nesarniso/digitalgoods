@@ -2,6 +2,7 @@
 
 namespace App\Domain\Notifications\Services;
 
+use App\Support\SiteBrand;
 use App\Domain\Notifications\Models\EmailTemplate;
 use App\Domain\Notifications\Models\EmailLog;
 use Illuminate\Support\Facades\Mail;
@@ -48,6 +49,7 @@ class EmailTemplateService
             return null;
         }
 
+        $replacements['site_name'] ??= app(SiteBrand::class)->name();
         $replacements = $this->normalizedReplacements($replacements);
 
         return [

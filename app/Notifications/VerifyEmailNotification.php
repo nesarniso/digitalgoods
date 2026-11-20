@@ -32,7 +32,7 @@ class VerifyEmailNotification extends BaseVerifyEmail
     public function toMail($notifiable): MailMessage
     {
         $rendered = app(EmailTemplateService::class)->render('email_verification', [
-            'site_name' => config('app.name'),
+            'site_name' => app(\App\Support\SiteBrand::class)->name(),
             'customer_name' => $notifiable->name,
             'verification_url' => $this->verificationUrl($notifiable),
             'expires_minutes' => config('auth.verification.expire', 60),

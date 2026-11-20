@@ -32,6 +32,8 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use App\Domain\Audit\Services\AuditLogger;
+use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rule;
 
 class AdminModuleController extends Controller
 {
@@ -280,6 +282,10 @@ class AdminModuleController extends Controller
             'form_text' => ['required', 'string', 'max:500'],
             'support_hours' => ['required', 'string', 'max:255'],
             'response_time' => ['required', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:150'],
+            'phone' => ['nullable', 'string', 'max:40'],
+            'whatsapp' => ['nullable', 'string', 'max:40'],
+            'address' => ['nullable', 'string', 'max:255'],
             'faq_eyebrow' => ['nullable', 'string', 'max:80'],
             'faq_title' => ['required', 'string', 'max:160'],
             'faq_items' => ['nullable', 'array'],
@@ -289,6 +295,9 @@ class AdminModuleController extends Controller
 
         foreach (['badge', 'hero_title', 'hero_text', 'form_eyebrow', 'form_title', 'form_text', 'support_hours', 'response_time', 'faq_eyebrow', 'faq_title'] as $field) {
             $this->settings->set("contact.{$field}", $data[$field] ?? '', 'contact', 'string', $request->user());
+        }
+        foreach (['email', 'phone', 'whatsapp', 'address'] as $field) {
+            $this->settings->set("system.{$field}", $data[$field] ?? '', 'system', 'string', $request->user());
         }
         $faqItems = collect($data['faq_items'] ?? [])
             ->map(fn (array $item) => ['question' => trim($item['question'] ?? ''), 'answer' => trim($item['answer'] ?? '')])
@@ -430,6 +439,50 @@ class AdminModuleController extends Controller
         $this->settings->set('homepage.latest_product_ids', json_encode($latestProductIds), 'homepage', 'json', $request->user());
 
         return back()->with('success', 'Recommended product updated.');
+    }
+
+    public function limitedOfferSettings()
+    {
+        $endsAt = $this->settings->get('homepage.limited_offer_ends_at');
+
+        return view('admin.modules.limited-offer-settings', [
+            'limitedOfferEnabled' => (bool) filter_var($this->settings->get('homepage.limited_offer_enabled', false), FILTER_VALIDATE_BOOLEAN),
+            'limitedOfferEndsAt' => filled($endsAt) ? Carbon::parse($endsAt)->format('Y-m-d\TH:i') : '',
+            'limitedOfferProductIds' => json_decode((string) $this->settings->get('homepage.limited_offer_product_ids', '[]'), true) ?: [],
+            'products' => Product::query()
+                ->where('status', 'published')
+                ->with(['category', 'images'])
+                ->orderBy('name')
+                ->get(),
+        ]);
+    }
+
+    public function saveLimitedOfferSettings(Request $request)
+    {
+        $enabled = $request->boolean('limited_offer_enabled');
+        $data = $request->validate([
+            'limited_offer_enabled' => ['nullable', 'boolean'],
+            'limited_offer_ends_at' => $enabled ? ['required', 'date', 'after:now'] : ['nullable', 'date'],
+            'limited_offer_product_ids' => $enabled ? ['required', 'array', 'min:1', 'max:7'] : ['nullable', 'array', 'max:7'],
+            'limited_offer_product_ids.*' => [
+                'integer',
+                'distinct',
+                Rule::exists('products', 'id')->where(fn ($query) => $query->where('status', 'published')->whereNull('deleted_at')),
+            ],
+        ]);
+
+        $productIds = array_values(array_map('intval', $data['limited_offer_product_ids'] ?? []));
+        $this->settings->set('homepage.limited_offer_enabled', $enabled, 'homepage', 'boolean', $request->user());
+        $this->settings->set(
+            'homepage.limited_offer_ends_at',
+            $data['limited_offer_ends_at'] ?? '',
+            'homepage',
+            'datetime',
+            $request->user()
+        );
+        $this->settings->set('homepage.limited_offer_product_ids', json_encode($productIds), 'homepage', 'json', $request->user());
+
+        return back()->with('success', 'Limited time offer settings updated.');
     }
 
     public function exportDatabase(Request $request)
@@ -885,14 +938,18 @@ class AdminModuleController extends Controller
         $faqItems = json_decode((string) $this->settings->get('contact.faq_items', ''), true);
 
         return [
-            'badge' => $this->settings->get('contact.badge', 'Customer care'),
-            'hero_title' => $this->settings->get('contact.hero_title', 'We are here to help.'),
-            'hero_text' => $this->settings->get('contact.hero_text', 'Have a question about a product or order? Reach out and our team will get back to you as soon as possible.'),
+            'badge' => $this->settings->get('contact.badge', 'Get in touch'),
+            'hero_title' => $this->settings->get('contact.hero_title', "We're Here To Help You."),
+            'hero_text' => $this->settings->get('contact.hero_text', 'Have a question about our digital products? Need assistance with your purchase? Our team is ready to help.'),
             'form_eyebrow' => $this->settings->get('contact.form_eyebrow', 'Send a message'),
-            'form_title' => $this->settings->get('contact.form_title', 'How can we help?'),
-            'form_text' => $this->settings->get('contact.form_text', 'Share the details below. We normally respond within 24 hours.'),
+            'form_title' => $this->settings->get('contact.form_title', 'Need a little help?'),
+            'form_text' => $this->settings->get('contact.form_text', "Whether it's a product question, download assistance, or anything related to your purchase, don't hesitate to reach out."),
             'support_hours' => $this->settings->get('contact.support_hours', 'Saturday–Thursday, 10:00 AM–8:00 PM (BST)'),
             'response_time' => $this->settings->get('contact.response_time', 'We usually reply within 24 hours.'),
+            'email' => $this->settings->get('system.email', ''),
+            'phone' => $this->settings->get('system.phone', ''),
+            'whatsapp' => $this->settings->get('system.whatsapp', ''),
+            'address' => $this->settings->get('system.address', ''),
             'faq_eyebrow' => $this->settings->get('contact.faq_eyebrow', 'Quick answers'),
             'faq_title' => $this->settings->get('contact.faq_title', 'Before you contact us'),
             'faq_items' => is_array($faqItems) ? $faqItems : [

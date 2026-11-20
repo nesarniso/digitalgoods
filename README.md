@@ -1,8 +1,9 @@
-# Ecommerce Core — Current Handoff
+# DigitalGoods
 
-This is a Laravel 13 single-vendor ecommerce platform being developed toward
-6Valley-level functionality. This README intentionally replaces the old phase
-notes and documents the current implementation and remaining work only.
+DigitalGoods is a Laravel 13 single-vendor ecommerce platform being developed
+toward 6Valley-level functionality. This README intentionally replaces the
+old phase notes and documents the current implementation and remaining work
+only.
 
 ## Stack and local setup
 
@@ -30,6 +31,20 @@ Fresh database seeds load the bundled default catalog from
 `database/seeders/data/default-catalog.json` and its referenced files from
 `storage/app/public/media`. Keep both with the project distribution; the
 snapshot contains catalog data only, not customer or order data.
+
+To replace the current category tree with WorkLinc's public WooCommerce
+categories, run `php artisan worklinc:import-categories`. This command
+replaces old categories, moves products previously assigned to them into
+`Digital Products`, and keeps category-scoped coupons attached to that
+category.
+
+After importing categories, run `php artisan worklinc:import-products` to
+import all public WorkLinc product listings, INR prices, descriptions,
+product images, and sample videos. The command can be re-run safely and
+identifies products and media by their WorkLinc source IDs/URLs. The public
+API does not include protected download files, so those must be added
+separately before promising digital delivery.
+Storefront and payment amounts use Indian Rupees (INR/₹).
 
 ## cPanel database package
 
@@ -205,8 +220,8 @@ secrets. Keep them in `.env`.
 - Zone-specific rates
 - Per-kg rate and free-above threshold
 - `ShippingSeeder` creates:
-  - `Standard delivery` at BDT 60
-  - `Free delivery` at BDT 0
+  - `Standard delivery` at INR 50–100 depending on zone
+  - `Free delivery` at INR 0
 
 ### Payments currently enabled
 

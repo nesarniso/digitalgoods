@@ -21,15 +21,16 @@ class PasswordResetCodeNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
+        $siteName = app(\App\Support\SiteBrand::class)->name();
         $rendered = app(EmailTemplateService::class)->render('password_reset_code', [
-            'site_name' => config('app.name'),
+            'site_name' => $siteName,
             'customer_name' => $notifiable->name,
             'reset_code' => $this->code,
             'expires_minutes' => '10',
         ]);
 
         return (new MailMessage)
-            ->subject($rendered['subject'] ?? 'Your '.config('app.name').' password reset code')
+            ->subject($rendered['subject'] ?? 'Your '.$siteName.' password reset code')
             ->view('emails.template', [
                 'body' => $rendered['body'] ?? view('emails.password-reset-code', [
                     'name' => $notifiable->name,

@@ -1,10 +1,13 @@
 @extends('layouts.storefront')
 
-@section('title', ($product->meta_title ?: $product->name).' | '.config('app.name'))
-@section('meta_description', $product->meta_description ?: $product->short_description ?: $product->description ?: $product->name)
+@php
+    $siteBrand = app(\App\Support\SiteBrand::class);
+@endphp
+@section('title', $siteBrand->text($product->meta_title ?: $product->name).' | '.config('app.name'))
+@section('meta_description', $siteBrand->text($product->meta_description ?: $product->short_description ?: $product->description ?: $product->name))
 @section('canonical_url', route('products.show', $product->slug))
 @section('og_type', 'product')
-@section('og_title', $product->name.' | '.config('app.name'))
+@section('og_title', $siteBrand->text($product->name).' | '.config('app.name'))
 @if ($product->images->first())
     @section('og_image', $product->images->first()->url)
 @endif
@@ -13,21 +16,21 @@
     $structuredData = [
         '@context' => 'https://schema.org',
         '@type' => 'Product',
-        'name' => $product->name,
-        'description' => $product->meta_description ?: $product->short_description ?: $product->description,
+        'name' => $siteBrand->text($product->name),
+        'description' => $siteBrand->text($product->meta_description ?: $product->short_description ?: $product->description),
         'sku' => $product->sku,
         'url' => route('products.show', $product->slug),
         'image' => $product->images->first()?->url,
         'offers' => [
             '@type' => 'Offer',
-            'priceCurrency' => 'BDT',
+            'priceCurrency' => 'INR',
             'price' => number_format((float) $product->effective_price, 2, '.', ''),
             'availability' => 'https://schema.org/InStock',
             'url' => route('products.show', $product->slug),
         ],
         'brand' => $product->brand ? [
             '@type' => 'Brand',
-            'name' => $product->brand->name,
+            'name' => $siteBrand->text($product->brand->name),
         ] : null,
         'aggregateRating' => $totalReviews > 0 ? [
             '@type' => 'AggregateRating',
@@ -44,7 +47,7 @@
         'itemListElement' => [
             ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => route('home')],
             ['@type' => 'ListItem', 'position' => 2, 'name' => 'Shop', 'item' => route('shop')],
-            ['@type' => 'ListItem', 'position' => 3, 'name' => $product->name, 'item' => route('products.show', $product->slug)],
+            ['@type' => 'ListItem', 'position' => 3, 'name' => $siteBrand->text($product->name), 'item' => route('products.show', $product->slug)],
         ],
     ];
 @endphp
@@ -52,7 +55,7 @@
 @endsection
 
 @section('content')
-<section data-product-page class="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+<section data-product-page class="mx-auto max-w-5xl px-4 py-12 pb-44 sm:px-6 sm:pb-28">
     @if(session('success'))
         <div class="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800" role="status">
             {{ session('success') }}
@@ -69,28 +72,28 @@
         <div class="product-gallery-main group relative flex items-center justify-center overflow-hidden rounded-[2rem] border border-slate-200/80 bg-gradient-to-br from-white via-indigo-50/70 to-slate-100 shadow-[0_24px_70px_rgba(30,41,59,0.12)]" style="aspect-ratio: 1.16 / 1;">
             <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_25%_15%,rgba(255,255,255,.95),transparent_35%)]"></div>
             @if ($product->images->first())
-                <img data-gallery-main src="{{ $product->images->first()->url }}" alt="{{ $product->images->first()->alt_text ?: $product->name }}" title="{{ $product->images->first()->title }}" class="product-gallery-main-image relative h-full w-full object-cover">
+                <img data-gallery-main src="{{ $product->images->first()->url }}" alt="{{ $siteBrand->text($product->images->first()->alt_text ?: $product->name) }}" title="{{ $siteBrand->text($product->images->first()->title) }}" class="product-gallery-main-image relative h-full w-full object-cover">
             @else
-                <span class="text-8xl font-black text-indigo-200">{{ Str::upper(Str::substr($product->name, 0, 1)) }}</span>
+                <span class="text-8xl font-black text-indigo-200">{{ Str::upper(Str::substr($siteBrand->text($product->name), 0, 1)) }}</span>
             @endif
         </div>
         @if ($product->images->count() > 1)
             <div class="mt-4 flex gap-3 overflow-x-auto pb-2" aria-label="Product images">
                 @foreach ($product->images as $image)
-                    <button type="button" data-gallery-thumbnail data-image-url="{{ $image->url }}" data-image-alt="{{ $image->alt_text ?: $product->name }}" class="product-gallery-thumb shrink-0 overflow-hidden rounded-2xl border-2 p-1 transition hover:-translate-y-0.5 hover:border-[var(--brand-primary)] {{ $loop->first ? 'is-active' : 'border-slate-200' }}" aria-label="View product image {{ $loop->iteration }}">
+                    <button type="button" data-gallery-thumbnail data-image-url="{{ $image->url }}" data-image-alt="{{ $siteBrand->text($image->alt_text ?: $product->name) }}" class="product-gallery-thumb shrink-0 overflow-hidden rounded-2xl border-2 p-1 transition hover:-translate-y-0.5 hover:border-[var(--brand-primary)] {{ $loop->first ? 'is-active' : 'border-slate-200' }}" aria-label="View product image {{ $loop->iteration }}">
                         <img src="{{ $image->url }}" alt="" class="h-16 w-16 rounded-xl object-cover sm:h-20 sm:w-20">
                     </button>
                 @endforeach
             </div>
         @endif
         </div>
-        <div class="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:p-7">
+        <div data-sticky-purchase-source class="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:p-7">
             @if ($product->category)
                 <a href="{{ route('shop', ['category' => $product->category->slug]) }}" class="inline-flex text-sm font-bold uppercase tracking-widest text-indigo-600 transition hover:text-indigo-800 hover:underline">
                     {{ $product->category->name }}
                 </a>
             @endif
-            <h1 class="mt-2 text-3xl font-black tracking-tight sm:text-4xl">{{ $product->name }}</h1>
+            <h1 class="mt-2 text-3xl font-black tracking-tight sm:text-4xl">{{ $siteBrand->text($product->name) }}</h1>
             <div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
                 <span class="text-lg tracking-wide text-amber-500" aria-label="{{ $totalReviews > 0 ? number_format((float) $averageRating, 1).' out of 5 stars' : 'No ratings yet' }}">{{ $totalReviews > 0 ? str_repeat('★', (int) round($averageRating)).str_repeat('☆', 5 - (int) round($averageRating)) : str_repeat('☆', 5) }}</span>
                 <span class="font-bold text-slate-700">{{ $totalReviews > 0 ? number_format((float) $averageRating, 1) : 'New' }}</span>
@@ -104,9 +107,9 @@
             @php
                 $displayVariant = $product->variants->first();
             @endphp
-            <p data-variant-price class="mt-4 text-3xl font-black text-indigo-700">৳{{ number_format((float) ($displayVariant?->effective_price ?? $product->effective_price), 2) }}</p>
-            <p data-variant-regular-price class="{{ ($displayVariant?->sale_price !== null || $product->sale_price) ? '' : 'hidden' }} mt-1 text-sm text-slate-400 line-through">৳{{ number_format((float) ($displayVariant?->price ?? $product->regular_price), 2) }}</p>
-            <div class="mt-5 rounded-2xl border border-slate-100 bg-slate-50/70 p-4"><p class="leading-7 text-slate-600">{{ $product->description ?: $product->short_description ?: 'A quality product selected for your everyday needs.' }}</p></div>
+            <p data-variant-price class="mt-4 text-3xl font-black text-indigo-700">₹{{ number_format((float) ($displayVariant?->effective_price ?? $product->effective_price), 2) }}</p>
+            <p data-variant-regular-price class="{{ ($displayVariant?->sale_price !== null || $product->sale_price) ? '' : 'hidden' }} mt-1 text-sm text-slate-400 line-through">₹{{ number_format((float) ($displayVariant?->price ?? $product->regular_price), 2) }}</p>
+            <div class="mt-5 rounded-2xl border border-slate-100 bg-slate-50/70 p-4"><p class="leading-7 text-slate-600">{{ $product->slug === 'all-bundles' ? 'Access ready-made reels, premium digital content, video assets and creative resources for personal use.' : ($product->slug === 'all-bundles-reseller-rights' ? 'Get all Personal Use plan benefits plus reseller rights for eligible digital products, your own selling prices and branding options.' : $siteBrand->text($product->description ?: $product->short_description ?: 'A quality product selected for your everyday needs.')) }}</p></div>
             @if ($product->isVariable() && $product->variants->isNotEmpty())
                 @php
                     $defaultVariant = $product->variants->first();
@@ -144,12 +147,12 @@
                 <span class="font-bold text-slate-700">Quantity:</span>
                 <div class="flex h-12 overflow-hidden rounded-xl border border-orange-400">
                     <button type="button" data-quantity-decrease class="w-11 bg-white text-lg text-orange-500 hover:bg-orange-50">−</button>
-                    <input data-product-quantity value="1" min="1" type="number" class="w-14 border-x border-orange-100 text-center outline-none">
+                    <input data-product-quantity data-product-page-quantity value="1" min="1" type="number" class="w-14 border-x border-orange-100 text-center outline-none">
                     <button type="button" data-quantity-increase class="w-11 bg-white text-lg text-orange-500 hover:bg-orange-50">+</button>
                 </div>
             </div>
             <div class="mt-3 flex flex-wrap items-center gap-3">
-                <button type="button" data-share-product data-share-title="{{ $product->name }}" data-share-url="{{ $shareUrl }}" class="flex h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 font-semibold text-slate-700 shadow-sm hover:border-indigo-300 hover:text-indigo-700" aria-label="Share {{ $product->name }}">
+                <button type="button" data-share-product data-share-title="{{ $siteBrand->text($product->name) }}" data-share-url="{{ $shareUrl }}" class="flex h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 font-semibold text-slate-700 shadow-sm hover:border-indigo-300 hover:text-indigo-700" aria-label="Share {{ $siteBrand->text($product->name) }}">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.5m-7.6 7.9 7.6 4.5"/></svg>
                     Share
                 </button>
@@ -166,7 +169,7 @@
                 @auth
                     <form method="POST" action="{{ route('account.wishlist.store', $product) }}">
                         @csrf
-                        <button type="submit" class="flex h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-orange-500 shadow-sm hover:border-orange-300" aria-label="Add {{ $product->name }} to wishlist">
+                        <button type="submit" class="flex h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-orange-500 shadow-sm hover:border-orange-300" aria-label="Add {{ $siteBrand->text($product->name) }} to wishlist">
                             <svg class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.35-9.5-9.1C.7 7.9 2.9 4.5 6.4 4.5c2.1 0 3.6 1.2 4.6 2.5 1-1.3 2.5-2.5 4.6-2.5 3.5 0 5.7 3.4 3.9 7.4C19.5 16.65 12 21 12 21Z"/></svg>
                             <span>{{ $productWishlistCount }}</span>
                         </button>
@@ -180,8 +183,32 @@
             </div>
         </div>
     </div>
+    @if ($product->videos->isNotEmpty())
+        <section class="mt-12" aria-labelledby="sample-videos-title">
+            <div class="mb-5 text-center">
+                <p class="text-sm font-black uppercase tracking-[0.18em] text-rose-500">Product preview</p>
+                <h2 id="sample-videos-title" class="mt-2 text-3xl font-black tracking-tight text-slate-900">Sample videos 👀</h2>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach ($product->videos as $video)
+                    <figure class="overflow-hidden rounded-2xl border border-rose-200 bg-white shadow-sm">
+                        <video class="aspect-[9/16] w-full bg-slate-950 object-contain" controls preload="metadata" playsinline>
+                            <source src="{{ $video->url }}" type="{{ $video->mime_type }}">
+                            Your browser does not support video playback.
+                        </video>
+                        <figcaption class="p-3 text-center text-sm font-bold text-orange-700">{{ $video->title ?: 'Sample '.$loop->iteration }}</figcaption>
+                    </figure>
+                @endforeach
+            </div>
+        </section>
+    @endif
     <div class="mt-16 space-y-6">
             <div class="min-w-0 space-y-6">
+            @if ($product->slug === 'all-bundles')
+                @include('storefront.product-plans.personal-details')
+            @elseif ($product->slug === 'all-bundles-reseller-rights')
+                @include('storefront.product-plans.reseller-details')
+            @else
                 <div class="relative min-w-0 overflow-hidden rounded-3xl border border-indigo-100/80 bg-gradient-to-br from-white via-white to-indigo-50/60 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)] sm:p-8">
                     <div class="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-indigo-100/70 blur-3xl"></div>
                     <div class="relative">
@@ -189,10 +216,11 @@
                         <h2 class="mt-4 text-2xl font-black tracking-tight text-slate-900">Product description</h2>
                         <p class="mt-1 text-sm text-slate-500">Everything you need to know about this product</p>
                         <div class="mt-6 border-t border-indigo-100/80 pt-5 text-sm leading-7 text-slate-600">
-                            {{ $product->description ?: $product->short_description ?: 'A quality product selected for your everyday needs.' }}
+                            {{ $siteBrand->text($product->description ?: $product->short_description ?: 'A quality product selected for your everyday needs.') }}
+                        </div>
                         </div>
                 </div>
-            </div>
+            @endif
             <section id="customer-reviews" class="relative min-w-0 scroll-mt-28 overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)] sm:p-8" aria-labelledby="customer-reviews-title">
                 <div class="absolute right-0 top-0 h-40 w-40 rounded-full bg-orange-100/60 blur-3xl"></div>
                 <div class="relative">
@@ -354,5 +382,67 @@
         </div>
     </div>
     @if ($relatedProducts->isNotEmpty())<div class="mt-20"><h2 class="text-2xl font-black">You may also like</h2><div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">@foreach ($relatedProducts as $relatedProduct) @include('storefront._product-card', ['product' => $relatedProduct]) @endforeach</div></div>@endif
+    @php
+        $stickyImage = $product->images->first();
+        $stickyPrice = $displayVariant?->effective_price ?? $product->effective_price;
+        $stickyRegularPrice = $displayVariant?->sale_price !== null
+            ? $displayVariant->price
+            : ($product->sale_price ? $product->regular_price : null);
+    @endphp
+    <aside data-sticky-purchase aria-hidden="true" class="fixed inset-x-0 bottom-0 z-[60] border-t border-slate-200 bg-white/95 opacity-0 shadow-[0_-8px_30px_rgba(15,23,42,0.16)] backdrop-blur-xl transition duration-200" aria-label="Quick product purchase">
+        <div class="mx-auto flex max-w-7xl flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:gap-4 sm:px-5 sm:py-2.5 lg:px-8">
+            <div class="flex min-w-0 items-center gap-2 sm:flex-1 sm:gap-3">
+                @if($stickyImage)
+                    <img src="{{ $stickyImage->url }}" alt="" class="h-10 w-10 shrink-0 rounded-xl object-cover ring-1 ring-slate-200 sm:h-12 sm:w-12">
+                @else
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-50 font-black text-orange-500 sm:h-12 sm:w-12">{{ Str::upper(Str::substr($siteBrand->text($product->name), 0, 1)) }}</span>
+                @endif
+                <p class="min-w-0 flex-1 truncate text-xs font-bold text-slate-800 sm:text-sm">{{ $siteBrand->text($product->name) }}</p>
+                <div class="shrink-0 text-right">
+                    @if($stickyRegularPrice !== null)
+                        <span data-sticky-regular-price class="mr-1 text-[10px] text-slate-400 line-through sm:mr-2 sm:text-xs">₹{{ number_format((float) $stickyRegularPrice, 2) }}</span>
+                    @else
+                        <span data-sticky-regular-price class="mr-1 hidden text-[10px] text-slate-400 line-through sm:mr-2 sm:text-xs"></span>
+                    @endif
+                    <span data-sticky-price class="text-sm font-black text-orange-600 sm:text-base">₹{{ number_format((float) $stickyPrice, 2) }}</span>
+                </div>
+            </div>
+            <div class="flex items-center justify-between gap-1 sm:justify-end sm:gap-2">
+                <div class="flex h-9 shrink-0 items-center overflow-hidden rounded-full border border-slate-300 sm:h-10">
+                    <button type="button" data-quantity-decrease class="h-full w-7 text-slate-600 hover:bg-slate-100 sm:w-9" aria-label="Decrease quantity">−</button>
+                    <input data-product-quantity data-product-page-quantity data-sticky-quantity value="1" min="1" type="number" inputmode="numeric" class="h-full w-8 border-x border-slate-200 text-center text-xs outline-none sm:w-10 sm:text-sm" aria-label="Quantity">
+                    <button type="button" data-quantity-increase class="h-full w-7 text-slate-600 hover:bg-slate-100 sm:w-9" aria-label="Increase quantity">+</button>
+                </div>
+                <button type="button" data-add-to-cart data-product-id="{{ $product->id }}" class="shrink-0 rounded-full bg-[#f58220] px-3 py-2 text-[10px] font-bold text-white transition hover:bg-orange-600 sm:px-5 sm:py-2.5 sm:text-xs">Add to Cart</button>
+                <button type="button" data-buy-now data-product-id="{{ $product->id }}" class="shrink-0 rounded-full bg-[#242424] px-3 py-2 text-[10px] font-bold text-white transition hover:bg-black sm:px-5 sm:py-2.5 sm:text-xs">Buy Now</button>
+                @if($compareEnabled)
+                    @auth
+                        <form method="POST" action="{{ route('account.compare.store', $product) }}" class="shrink-0">
+                            @csrf
+                            <button type="submit" class="flex h-8 w-8 items-center justify-center rounded-full text-slate-700 hover:bg-slate-100 sm:h-10 sm:w-10" aria-label="Add {{ $siteBrand->text($product->name) }} to compare">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v18M5 6h14M5 6l-3 7h6L5 6Zm14 0-3 7h6l-3-7ZM8 21h8"/></svg>
+                            </button>
+                        </form>
+                    @else
+                        <a href="{{ route('account.login') }}" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-700 hover:bg-slate-100 sm:h-10 sm:w-10" aria-label="Sign in to compare {{ $siteBrand->text($product->name) }}">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v18M5 6h14M5 6l-3 7h6L5 6Zm14 0-3 7h6l-3-7ZM8 21h8"/></svg>
+                        </a>
+                    @endauth
+                @endif
+                @auth
+                    <form method="POST" action="{{ route('account.wishlist.store', $product) }}" class="shrink-0">
+                        @csrf
+                        <button type="submit" class="flex h-8 w-8 items-center justify-center rounded-full text-slate-700 hover:bg-rose-50 hover:text-rose-600 sm:h-10 sm:w-10" aria-label="Add {{ $siteBrand->text($product->name) }} to wishlist">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20.8 8.8c0 5.2-8.8 10.2-8.8 10.2S3.2 14 3.2 8.8A4.8 4.8 0 0 1 12 6.2a4.8 4.8 0 0 1 8.8 2.6Z"/></svg>
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('account.login') }}" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-700 hover:bg-rose-50 hover:text-rose-600 sm:h-10 sm:w-10" aria-label="Sign in to wishlist {{ $siteBrand->text($product->name) }}">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20.8 8.8c0 5.2-8.8 10.2-8.8 10.2S3.2 14 3.2 8.8A4.8 4.8 0 0 1 12 6.2a4.8 4.8 0 0 1 8.8 2.6Z"/></svg>
+                    </a>
+                @endauth
+            </div>
+        </div>
+    </aside>
 </section>
 @endsection

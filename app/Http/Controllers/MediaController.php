@@ -12,7 +12,7 @@ class MediaController extends Controller
         abort_if(
             str_contains($path, '..')
                 || str_contains($path, '\\')
-                || ! preg_match('#^(branding|categories|homepage|payments|products|settings)/[A-Za-z0-9_./-]+$#', $path),
+                || ! preg_match('#^(branding|categories|homepage|payments|products|settings|blog/media)/[A-Za-z0-9_./-]+$#', $path),
             404
         );
 

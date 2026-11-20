@@ -19,8 +19,10 @@ use App\Http\Controllers\AdminPaymentController;
 use App\Http\Controllers\AdminProductViewController;
 use App\Http\Controllers\AdminShippingController;
 use App\Http\Controllers\AdminSupportTicketController;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CustomerAccountController;
 use App\Http\Controllers\CustomerAuthController;
+use App\Http\Controllers\CustomerDigitalDownloadController;
 use App\Http\Controllers\CustomerSupportController;
 use App\Http\Controllers\EntrepreneurAttributionController;
 use App\Http\Controllers\AdminEntrepreneurController;
@@ -41,7 +43,13 @@ Route::get('/', [StorefrontController::class, 'home'])->name('home');
 Route::get('/storage/media/{path}', [MediaController::class, 'show'])
     ->where('path', '.*')
     ->name('media.show');
+Route::get('/reels', [StorefrontController::class, 'reels'])->name('reels');
 Route::get('/shop', [StorefrontController::class, 'shop'])->name('shop');
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/{blogPost:slug}', [BlogController::class, 'show'])->name('blog.show');
+Route::get('/about-us', [PageController::class, 'aboutPage'])->name('about-us');
+Route::get('/contact-us', [PageController::class, 'contactPage'])->name('contact-us');
+Route::get('/refund_returns', [PageController::class, 'refundsPage'])->name('refund-returns');
 Route::get('/products/{slug}', [StorefrontController::class, 'product'])->name('products.show');
 Route::get('/s/{code}/{slug}', EntrepreneurAttributionController::class)->name('entrepreneur.selling-link');
 Route::get('/r/{code}', [EntrepreneurAttributionController::class, 'referral'])->name('entrepreneur.referral-link');
@@ -73,6 +81,7 @@ Route::middleware('guest')->prefix('account')->name('account.')->group(function 
 
 Route::middleware('auth')->prefix('account')->name('account.')->group(function () {
     Route::get('/', [CustomerAccountController::class, 'index'])->name('index');
+    Route::get('/orders/{order}/downloads/{file}', [CustomerDigitalDownloadController::class, 'download'])->name('orders.downloads.file');
     Route::get('/coupons', [CustomerAccountController::class, 'coupons'])->name('coupons');
     Route::get('/profile', [CustomerAccountController::class, 'profile'])->name('profile');
     Route::put('/profile', [CustomerAccountController::class, 'updateProfile'])->name('profile.update');
@@ -150,7 +159,15 @@ Route::middleware(['auth', 'role:super_admin|admin'])->prefix('admin')->name('ad
     Route::delete('/products/{product}', [AdminProductViewController::class, 'destroy'])->name('products.destroy');
     Route::post('/products/{product}/restore', [AdminProductViewController::class, 'restore'])->name('products.restore');
     Route::post('/products/{product}/images', [AdminProductViewController::class, 'addImage'])->name('products.images.store');
+    Route::post('/products/{product}/videos', [AdminProductViewController::class, 'addVideo'])->name('products.videos.store');
+    Route::delete('/products/{product}/videos/{video}', [AdminProductViewController::class, 'destroyVideo'])->name('products.videos.destroy');
+    Route::post('/products/{product}/downloads', [AdminProductViewController::class, 'addDownloadFiles'])->name('products.downloads.store');
+    Route::delete('/products/{product}/downloads/{file}', [AdminProductViewController::class, 'destroyDownloadFile'])->name('products.downloads.destroy');
     Route::get('/gallery', [AdminGalleryController::class, 'index'])->name('gallery');
+    Route::get('/video-gallery', [AdminGalleryController::class, 'videos'])->name('video-gallery');
+    Route::put('/video-gallery/{video}', [AdminGalleryController::class, 'updateVideo'])->name('video-gallery.update');
+    Route::delete('/video-gallery/{video}', [AdminGalleryController::class, 'destroyVideo'])->name('video-gallery.destroy');
+    Route::get('/video-gallery/{video}/download', [AdminGalleryController::class, 'downloadVideo'])->name('video-gallery.download');
     Route::put('/gallery/{image}', [AdminGalleryController::class, 'update'])->name('gallery.update');
     Route::delete('/gallery/{image}', [AdminGalleryController::class, 'destroy'])->name('gallery.destroy');
     Route::post('/products/{product}/variants', [AdminProductViewController::class, 'addVariant'])->name('products.variants.store');
@@ -231,6 +248,8 @@ Route::middleware(['auth', 'role:super_admin|admin'])->prefix('admin')->name('ad
     Route::post('/settings/most-selling', [AdminModuleController::class, 'saveMostSellingSettings'])->name('settings.most-selling.save');
     Route::get('/settings/recommended-product', [AdminModuleController::class, 'recommendedProductSettings'])->name('settings.recommended-product');
     Route::post('/settings/recommended-product', [AdminModuleController::class, 'saveRecommendedProductSettings'])->name('settings.recommended-product.save');
+    Route::get('/settings/limited-offer', [AdminModuleController::class, 'limitedOfferSettings'])->name('settings.limited-offer');
+    Route::post('/settings/limited-offer', [AdminModuleController::class, 'saveLimitedOfferSettings'])->name('settings.limited-offer.save');
     Route::get('/settings/database/export', [AdminModuleController::class, 'exportDatabase'])->name('settings.database.export');
     Route::post('/settings/database/import', [AdminModuleController::class, 'importDatabase'])->name('settings.database.import');
     Route::post('/settings/system', [AdminModuleController::class, 'saveSystemSettings'])->name('settings.system');

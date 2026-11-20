@@ -118,7 +118,7 @@ class AdminEmailController extends Controller
         ]);
 
         $replacements = [
-            '{{site_name}}' => config('app.name'),
+            '{{site_name}}' => app(\App\Support\SiteBrand::class)->name(),
             '{{customer_name}}' => $request->user()->name ?? 'Customer',
             '{{order_number}}' => 'ORD-10001',
             '{{grand_total}}' => '$129.00',
